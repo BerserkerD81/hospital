@@ -3,6 +3,7 @@
 <?import java.lang.String?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.image.Image?>
@@ -84,7 +85,11 @@
                   <Pane prefHeight="0.0" prefWidth="645.0" styleClass="dark-gray-background" stylesheets="@values/styles.css" />
                   <Pane prefHeight="527.0" prefWidth="723.0">
                      <children>
-                        <TextArea layoutX="43.0" layoutY="29.0" prefHeight="464.0" prefWidth="643.0" />
+                        <ScrollPane layoutX="73.0" layoutY="35.0" prefHeight="457.0" prefWidth="608.0">
+                           <content>
+                              <TextArea prefHeight="464.0" prefWidth="643.0" />
+                           </content>
+                        </ScrollPane>
                      </children>
                   </Pane>
                   <HBox alignment="CENTER" prefHeight="36.0" prefWidth="610.0" stylesheets="@values/styles.css">
