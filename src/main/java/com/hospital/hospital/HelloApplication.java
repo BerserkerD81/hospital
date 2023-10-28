@@ -40,10 +40,11 @@ public class HelloApplication extends Application {
         System.out.print("Por favor, ingrese su nombre de usuario: ");
         String userName = scanner.nextLine();
 
-        FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("hello-view.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("hello-view_2.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 1080, 720);
         stage.setTitle("Chat Hospital");
         stage.setScene(scene);
+        stage.setMaximized(true);
         stage.show();
 
         chatPlace = (VBox) scene.lookup("#chat_place");
