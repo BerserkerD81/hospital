@@ -49,7 +49,10 @@
                         <Image url="@images/busqueda.png" />
                      </image>
                   </ImageView>
-                  <TextField fx:id="search_bar" promptText="buscar" styleClass="transparent-background" stylesheets="@values/styles.css" />
+                  <TextField fx:id="search_bar" promptText="buscar" style="-fx-text-fill: #FFFFFF;" styleClass="transparent-background" stylesheets="@values/styles.css">
+                     <font>
+                        <Font size="13.0" />
+                     </font></TextField>
                </children>
             </HBox>
             <Pane prefHeight="674.0" prefWidth="261.0" />
@@ -60,13 +63,16 @@
             <Font size="34.0" />
          </font>
       </TextField>
-      <HBox alignment="CENTER" layoutX="407.0" layoutY="648.0" prefHeight="34.0" prefWidth="593.0" stylesheets="@values/styles.css">
+      <HBox alignment="CENTER" layoutX="407.0" layoutY="648.0" prefHeight="34.0" prefWidth="593.0" stylesheets="@values/styles.css" AnchorPane.leftAnchor="406.0" AnchorPane.rightAnchor="14.0">
          <styleClass>
             <String fx:value="dark-gray-background" />
             <String fx:value="radius" />
          </styleClass>
          <children>
-            <TextField fx:id="search_bar1" prefHeight="25.0" prefWidth="523.0" promptText="Escribe tu mensaje" styleClass="transparent-background" stylesheets="@values/styles.css" />
+            <TextField fx:id="search_bar1" prefHeight="25.0" prefWidth="523.0" promptText="Escribe tu mensaje" style="-fx-text-fill: #FFFFFF;" styleClass="transparent-background" stylesheets="@values/styles.css">
+               <font>
+                  <Font size="13.0" />
+               </font></TextField>
             <ImageView fitHeight="34.0" fitWidth="40.0" pickOnBounds="true" preserveRatio="true">
                <image>
                   <Image url="@images/enviar.png" />
@@ -77,11 +83,10 @@
             </ImageView>
          </children>
       </HBox>
-      <VBox layoutX="391.0" layoutY="140.0" prefHeight="484.0" prefWidth="622.0">
+      <VBox layoutX="391.0" layoutY="140.0" prefHeight="484.0" AnchorPane.leftAnchor="390.0" AnchorPane.rightAnchor="1.0">
          <children>
-            <TextArea prefHeight="486.0" prefWidth="622.0" />
+            <TextArea editable="false" prefHeight="486.0" prefWidth="622.0" />
          </children>
       </VBox>
-      <HBox layoutX="391.0" layoutY="624.0" prefHeight="100.0" prefWidth="200.0" />
    </children>
 </AnchorPane>
