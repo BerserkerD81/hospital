@@ -137,6 +137,7 @@
                                 if (message.contains("Historial entre")) {
                                     String[] aux = message.split("\\*");
                                     System.out.println(Arrays.toString(aux));
+                                    if(aux.length>3){
                                     String[] aux1 = aux[3].split(",-");
                                     StringBuilder historial = new StringBuilder();
                                     for (String mlog:aux1)
@@ -149,7 +150,7 @@
                                         System.out.println(historial);
                                         messagelog.setText(historial.toString());
                                     }
-                                }
+                                }}
 
 
 
