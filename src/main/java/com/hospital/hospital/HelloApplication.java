@@ -60,7 +60,7 @@
             System.out.print("Por favor, ingrese su nombre de usuario: ");
             this.userName = scanner.nextLine();
             FXMLLoader escena_login = new FXMLLoader(HelloApplication.class.getResource("Inicio_sesion.fxml"));
-            Scene login = new Scene(escena_login.load(), 1080, 720);
+            Scene login = new Scene(escena_login.load(), 419, 342);
             stage.setTitle("Iniciar Sesión");
             stage.setScene(login);
             stage.show();
@@ -70,19 +70,22 @@
             login_password = (TextField) login.lookup("#login_password");
             login_register =  (Hyperlink) login.lookup("login_register");
 
+            FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("hello-view.fxml"));
+            Scene scene = new Scene(fxmlLoader.load(), 1080, 720);
+
             botonLogin.setOnMouseClicked(e -> {
                 String user = login_user.getText();
                 String pass = login_password.getText();
                 //Aqui hacer verificaciones
                 inicio = true;
-            });
-            FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("hello-view.fxml"));
-            Scene scene = new Scene(fxmlLoader.load(), 1080, 720);
-
-            if(inicio){ //Inicio chat cuando se inicia sesión
                 stage.setTitle("Chat Hospital");
                 stage.setScene(scene);
                 stage.show();
+            });
+
+
+            if(inicio){ //Inicio chat cuando se inicia sesión
+
             }
 
             chatPlace = (VBox) scene.lookup("#chat_place");

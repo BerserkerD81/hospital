@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Text?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="342.0" prefWidth="419.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <TextField fx:id="login_user" layoutX="181.0" layoutY="92.0" />
+      <TextField fx:id="login_password" layoutX="181.0" layoutY="142.0" />
+      <Text layoutX="101.0" layoutY="109.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Usuario:" />
+      <Text layoutX="101.0" layoutY="159.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Contraseña:" />
+      <Text layoutX="208.0" layoutY="68.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Ingrese sus datos" />
+      <Button fx:id="login_accept" layoutX="208.0" layoutY="195.0" mnemonicParsing="false" prefHeight="38.0" prefWidth="92.0" text="Aceptar" />
+      <Hyperlink fx:id="login_register" layoutX="220.0" layoutY="268.0" text="Registrarse" />
+   </children>
+</AnchorPane>
