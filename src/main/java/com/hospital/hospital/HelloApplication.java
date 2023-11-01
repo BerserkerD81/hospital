@@ -8,10 +8,7 @@
     import javafx.geometry.Insets;
     import javafx.scene.Node;
     import javafx.scene.Scene;
-    import javafx.scene.control.Button;
-    import javafx.scene.control.Label;
-    import javafx.scene.control.TextArea;
-    import javafx.scene.control.TextField;
+    import javafx.scene.control.*;
     import javafx.scene.image.Image;
     import javafx.scene.image.ImageView;
     import javafx.scene.layout.HBox;
@@ -49,18 +46,44 @@
         public PrintWriter writer;
         public BufferedReader reader;
 
+        //Botones pal login
+        private Button botonLogin;
+        private TextField login_user;
+        private TextField login_password;
+        private Hyperlink login_register;
+        //Variable chafa, esto es por mientras
+        private boolean inicio = false;
         @Override
         public void start(Stage stage) throws IOException {
             // Pedir al usuario que ingrese su nombre por consola
             Scanner scanner = new Scanner(System.in);
             System.out.print("Por favor, ingrese su nombre de usuario: ");
             this.userName = scanner.nextLine();
+            FXMLLoader escena_login = new FXMLLoader(HelloApplication.class.getResource("Inicio_sesion.fxml"));
+            Scene login = new Scene(escena_login.load(), 1080, 720);
+            stage.setTitle("Iniciar Sesión");
+            stage.setScene(login);
+            stage.show();
 
+            botonLogin = (Button) login.lookup("#login_accept");
+            login_user = (TextField) login.lookup("#login_user");
+            login_password = (TextField) login.lookup("#login_password");
+            login_register =  (Hyperlink) login.lookup("login_register");
+
+            botonLogin.setOnMouseClicked(e -> {
+                String user = login_user.getText();
+                String pass = login_password.getText();
+                //Aqui hacer verificaciones
+                inicio = true;
+            });
             FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("hello-view.fxml"));
             Scene scene = new Scene(fxmlLoader.load(), 1080, 720);
-            stage.setTitle("Chat Hospital");
-            stage.setScene(scene);
-            stage.show();
+
+            if(inicio){ //Inicio chat cuando se inicia sesión
+                stage.setTitle("Chat Hospital");
+                stage.setScene(scene);
+                stage.show();
+            }
 
             chatPlace = (VBox) scene.lookup("#chat_place");
             buttonsend = (ImageView) scene.lookup("#send_button");
@@ -151,9 +174,6 @@
                                         messagelog.setText(historial.toString());
                                     }
                                 }}
-
-
-
 
                             });
 
