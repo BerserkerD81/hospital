@@ -17,37 +17,40 @@
    <left>
       <HBox prefHeight="720.0" prefWidth="1224.0">
          <children>
-            <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" styleClass="dark-gray-background" stylesheets="@values/styles.css">
+            <VBox fx:id="menu_bar" alignment="CENTER" prefHeight="200.0" prefWidth="100.0" styleClass="dark-gray-background" stylesheets="@values/styles.css">
                <children>
-                  <ImageView fx:id="dm_button" fitHeight="48.0" fitWidth="38.0" pickOnBounds="true" preserveRatio="true">
-                     <image>
-                        <Image url="@images/chat.png" />
-                     </image>
-                     <VBox.margin>
-                        <Insets top="20.0" />
-                     </VBox.margin>
-                  </ImageView>
-                  <ImageView fx:id="group_button" fitHeight="48.0" fitWidth="38.0" pickOnBounds="true" preserveRatio="true">
-                     <image>
-                        <Image url="@images/grupo.png" />
-                     </image>
-                     <VBox.margin>
-                        <Insets top="20.0" />
-                     </VBox.margin>
-                  </ImageView>
-                  <ImageView fx:id="account_button" fitHeight="48.0" fitWidth="38.0" pickOnBounds="true" preserveRatio="true">
-                     <image>
-                        <Image url="@images/usuario.png" />
-                     </image>
-                     <VBox.margin>
-                        <Insets top="20.0" />
-                     </VBox.margin>
-                  </ImageView>
+                  <HBox fx:id="messages_button" alignment="CENTER" prefHeight="52.0" prefWidth="60.0">
+                     <children>
+                        <ImageView fitHeight="48.0" fitWidth="38.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@images/chat.png" />
+                           </image>
+                        </ImageView>
+                     </children>
+                  </HBox>
+                  <HBox fx:id="group_button" alignment="CENTER" prefHeight="48.0" prefWidth="38.0">
+                     <children>
+                        <ImageView fitHeight="48.0" fitWidth="38.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@images/grupo.png" />
+                           </image>
+                        </ImageView>
+                     </children>
+                  </HBox>
+                  <HBox fx:id="account_button" alignment="CENTER" prefHeight="48.0" prefWidth="38.0">
+                     <children>
+                        <ImageView fitHeight="48.0" fitWidth="38.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@images/usuario.png" />
+                           </image>
+                        </ImageView>
+                     </children>
+                  </HBox>
                </children>
             </VBox>
             <VBox fx:id="chat_place" prefHeight="720.0" prefWidth="300.0" styleClass="gray-background" stylesheets="@values/styles.css">
                <children>
-                  <HBox alignment="CENTER" prefHeight="36.0" prefWidth="200.0" stylesheets="@values/styles.css">
+                  <HBox fx:id="searchBox" alignment="CENTER" prefHeight="36.0" prefWidth="200.0" stylesheets="@values/styles.css">
                      <children>
                         <ImageView fx:id="search_button" fitHeight="26.0" fitWidth="31.0" pickOnBounds="true" preserveRatio="true">
                            <image>
