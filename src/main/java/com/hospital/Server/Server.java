@@ -15,7 +15,7 @@ public class Server {
 
     public static void main(String[] args) {
         //conecta con la base de datos
-        String url = "jdbc:sqlite:src/main/java/com/hospital/Server/usuarios.db";
+        String url = "jdbc:sqlite:src/main/java/resources/db/login.db";
         Connection connect;
         try {
             connect = DriverManager.getConnection(url);
