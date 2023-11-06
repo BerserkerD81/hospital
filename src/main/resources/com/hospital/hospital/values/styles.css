@@ -11,3 +11,9 @@
 {
     -fx-background-radius: 100px;
 }
+p{
+ color: #000080;
+ }
+ a{
+   color: #00FFFF;
+ } 
