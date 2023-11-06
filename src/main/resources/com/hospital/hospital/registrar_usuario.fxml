@@ -5,16 +5,15 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Text?>
 
-
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="332.0" prefWidth="433.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
    <children>
       <Text layoutX="100.0" layoutY="117.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Usuario:" />
       <Text layoutX="90.0" layoutY="160.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Contraseña:" />
       <Text layoutX="72.0" layoutY="205.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Confirmar contraseña:" />
-      <TextField layoutX="210.0" layoutY="100.0" />
-      <TextField layoutX="210.0" layoutY="143.0" />
-      <TextField layoutX="210.0" layoutY="188.0" />
+      <TextField fx:id="registro_user" layoutX="210.0" layoutY="100.0" />
+      <TextField fx:id="registro_pass" layoutX="210.0" layoutY="143.0" />
+      <TextField fx:id="registro_check" layoutX="210.0" layoutY="188.0" />
       <Text layoutX="233.0" layoutY="69.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Registrar usuario" />
-      <Button layoutX="240.0" layoutY="258.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="89.0" text="Aceptar" />
+      <Button fx:id="botonRegistro" layoutX="240.0" layoutY="258.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="89.0" text="Aceptar" />
    </children>
 </AnchorPane>
