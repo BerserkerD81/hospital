@@ -60,7 +60,7 @@
                               <Insets />
                            </HBox.margin>
                         </ImageView>
-                        <TextField fx:id="search_bar" promptText="buscar" styleClass="transparent-background" stylesheets="@values/styles.css" />
+                        <TextField fx:id="search_bar" promptText="buscar" style="-fx-text-fill: #FFFFFF;" styleClass="transparent-background" stylesheets="@values/styles.css" />
                      </children>
                      <VBox.margin>
                         <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
@@ -87,12 +87,12 @@
                   <Pane prefHeight="0.0" prefWidth="645.0" styleClass="dark-gray-background" stylesheets="@values/styles.css" />
                   <Pane prefHeight="527.0" prefWidth="723.0">
                      <children>
-                        <TextArea fx:id="message_area" layoutX="43.0" layoutY="29.0" prefHeight="464.0" prefWidth="643.0" />
+                        <TextArea fx:id="message_area" editable="false" layoutX="43.0" layoutY="29.0" prefHeight="464.0" prefWidth="643.0" />
                      </children>
                   </Pane>
                   <HBox alignment="CENTER" prefHeight="36.0" prefWidth="610.0" stylesheets="@values/styles.css">
                      <children>
-                        <TextField fx:id="message_bar" prefHeight="26.0" prefWidth="617.0" promptText="Escribe tu mensaje" styleClass="transparent-background" stylesheets="@values/styles.css" />
+                        <TextField fx:id="message_bar" prefHeight="26.0" prefWidth="617.0" promptText="Escribe tu mensaje" style="-fx-text-fill: #FFFFFF;" styleClass="transparent-background" stylesheets="@values/styles.css" />
                         <ImageView fx:id="send_button" fitHeight="26.0" fitWidth="31.0" pickOnBounds="true" preserveRatio="true">
                            <image>
                               <Image url="@images/enviar.png" />
