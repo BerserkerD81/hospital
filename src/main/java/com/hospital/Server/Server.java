@@ -1,5 +1,12 @@
 package com.hospital.Server;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.ResultSet;
+
+
 import java.io.*;
 import java.net.*;
 import java.util.*;
