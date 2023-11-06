@@ -93,7 +93,8 @@
 
             FXMLLoader registro = new FXMLLoader(HelloApplication.class.getResource("registrar_usuario.fxml"));
             Scene registro_view = new Scene(registro.load(), 419, 342);
-
+            
+            //cambiar a solo administrador
             login_register.setOnAction(e ->{
                 stage.setTitle("Registrarse");
                 stage.setScene(registro_view);
@@ -116,10 +117,11 @@
 
             botonLogin.setOnMouseClicked(e -> {
                 String user = login_user.getText();
+                this.userName = user;
                 String pass = login_password.getText();
                 //Aqui hacer verificaciones
                 inicio = true;
-                //consultar base de datos (por ahora si el server)
+                //consultar base de datos (por ahora sin el server)
                 String url = "jdbc:sqlite:src/main/resources/db/login.db";
                 Connection connect;
                 ResultSet result = null;
