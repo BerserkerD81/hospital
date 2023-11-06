@@ -90,21 +90,28 @@
                         DatabaseMetaData meta = connect.getMetaData();
                         System.out.println("El driver es " + meta.getDriverName());
                         System.out.println("Se ha establecido una conexión con la base de datos");
-                        //prueba consultas
+                        //consulta de verificacion de usuario
                         PreparedStatement st = connect.prepareStatement("SELECT * FROM usuarios WHERE name = ? AND password = ?");
                         st.setString(1, user);
                         st.setString(2, pass);
                         result = st.executeQuery();
-                        //imprimir resultados
+                        //respuesta de la consulta
                         if (result.next()) {
                             System.out.println(" usuario conectado!!!");
+                            this.userName = user;
                             stage.setTitle("Chat Hospital");
                             stage.setScene(scene);
                             stage.show();
+                            //si el tipo de usuario es admin se abre la ventana de administrador
+                            if (result.getString("tipo").equals("admin")) {
+                                System.out.println("usuario admin");
+                                //abrir ventana de admin
+                            }
                         } else {
                             System.out.println("Usuario o contraseña incorrectos");
                             System.out.println("Usuario: " + user + " Contraseña: " + pass);
                         }
+
 
                     }
                 } catch (SQLException ex) {
