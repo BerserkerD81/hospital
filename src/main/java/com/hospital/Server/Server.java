@@ -1,11 +1,6 @@
 package com.hospital.Server;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.ResultSet;
-
+import java.sql.*;
 
 import java.io.*;
 import java.net.*;
@@ -18,6 +13,20 @@ public class Server {
     public static List<Socket> listaSockets = new CopyOnWriteArrayList<>();
 
     public static void main(String[] args) {
+        //conecta con la base de datos
+        String url = "jdbc:sqlite:src/main/java/com/hospital/Server/usuarios.db";
+        Connection connect;
+        try {
+            connect = DriverManager.getConnection(url);
+            if (connect != null) {
+                DatabaseMetaData meta = connect.getMetaData();
+                System.out.println("El driver es " + meta.getDriverName());
+                System.out.println("Se ha establecido una conexión con la base de datos");
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        //inicia el servidor
         try {
             ServerSocket serverSocket = new ServerSocket(PUERTO);
             System.out.println("Servidor iniciado. Esperando conexiones en el puerto " + PUERTO);

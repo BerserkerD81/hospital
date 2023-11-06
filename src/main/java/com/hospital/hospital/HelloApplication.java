@@ -1,5 +1,6 @@
     package com.hospital.hospital;
 
+    import java.sql.*;
     import javafx.application.Application;
     import javafx.application.Platform;
     import javafx.collections.FXCollections;
@@ -269,6 +270,30 @@
 
 
         public static void main(String[] args) {
+            //conecta con la base de datos
+            String url = "jdbc:sqlite:src/main/resources/db/login.db";
+            Connection connect;
+            ResultSet result = null;
+            try {
+                connect = DriverManager.getConnection(url);
+                if (connect != null) {
+                    DatabaseMetaData meta = connect.getMetaData();
+                    System.out.println("El driver es " + meta.getDriverName());
+                    System.out.println("Se ha establecido una conexión con la base de datos");
+                    //prueba consultas
+                    PreparedStatement st = connect.prepareStatement("SELECT * FROM usuarios");
+                    result = st.executeQuery();
+
+                    //imprimir resultados
+                    while (result.next()) {
+                        System.out.println(result.getString("ID") + " " + result.getString("name"));
+                    }
+
+                }
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+            }
+
             launch();
         }
     }
