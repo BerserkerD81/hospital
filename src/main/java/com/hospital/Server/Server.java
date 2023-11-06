@@ -388,15 +388,64 @@ public class Server {
                     else if (mensaje.startsWith("/getHistorial")) {
                         String[] parts = mensaje.split(" ");
                         if (parts.length == 3) {
-                            Server.getHistorial(parts[1], parts[2]);
-                        } else {
+                            if(!(parts[2].contains("TODOS"))) {
+                                System.out.println("falla aca");
+                                System.out.println(parts[2]);
+                                Server.getHistorial(parts[1], parts[2]);
+                            }
+                            else {
+                                ArrayList<String> GroupUsers =new ArrayList<String>();
+
+
+                                Iterator<Map.Entry<User,Socket>> iterator= usuariosConSockets.entrySet().iterator();
+                                while (iterator.hasNext())
+                                {
+                                    Map.Entry<User,Socket> entry =iterator.next();
+                                    User user = entry.getKey();
+                                    GroupUsers.add(user.getUser());
+
+                                }
+
+                                for (String user : GroupUsers) {
+                                    if(!user.equals(parts[1]))
+                                    {Server.getHistorial(parts[1],user);
+                                }}
+
+                            }
+
+                        }
+
+
+                        else {
                             enviarMensajeASockets(socket, "Comando incorrecto");
                         }
                     } else if (mensaje.startsWith("/updateHistorial")) {
                         String[] parts = mensaje.split(" ", 4);
                         if (parts.length == 4) {
-                            Server.updateHistorial(parts[1], parts[2], parts[3]);
-                        } else {
+                         if(!parts[2].contains("TODOS")) {
+                             Server.updateHistorial(parts[1], parts[2], parts[3]);
+                         }
+                         else {
+                             ArrayList<String> GroupUsers =new ArrayList<String>();
+
+
+                             Iterator<Map.Entry<User,Socket>> iterator= usuariosConSockets.entrySet().iterator();
+                             while (iterator.hasNext())
+                             {
+                                 Map.Entry<User,Socket> entry =iterator.next();
+                                 User user = entry.getKey();
+                                 GroupUsers.add(user.getUser());
+                             }
+
+                             for (String user : GroupUsers)
+                             {
+                                 updateHistorial(parts[1],user,parts[3]);
+                             }
+
+                         }
+
+                        }
+                        else {
                             enviarMensajeASockets(socket, "Comando incorrecto");
                         }
                     }
@@ -462,4 +511,6 @@ public class Server {
             }
         }
     }
+
+
 }

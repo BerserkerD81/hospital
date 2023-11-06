@@ -74,12 +74,6 @@
         @Override
         public void start(Stage stage) throws IOException {
             // Pedir al usuario que ingrese su nombre por consola
-            Scanner scanner = new Scanner(System.in);
-            System.out.print("Por favor, ingrese su nombre de usuario: ");
-            this.userName = scanner.nextLine();
-            System.out.print("Por favor, ingrese su tipo de usuario: ");
-            this.userType = scanner.nextLine();
-
             FXMLLoader escena_login = new FXMLLoader(HelloApplication.class.getResource("Inicio_sesion.fxml"));
             Scene login = new Scene(escena_login.load(), 419, 342);
             stage.setTitle("Iniciar Sesión");
@@ -139,11 +133,14 @@
                         if (result.next()) {
                             System.out.println(" usuario conectado!!!");
                             this.userName = user;
+                            this.userType =result.getString("tipoUsuario");
+                            writer.println("/sendUser "+userName+" "+userType);
                             stage.setTitle("Chat Hospital");
                             stage.setScene(scene);
                             stage.show();
+
                             //si el tipo de usuario es admin se abre la ventana de administrador
-                            if (result.getString("tipo").equals("admin")) {
+                            if (result.getString("tipoUsuario").equals("admin")) {
                                 System.out.println("usuario admin");
                                 //abrir ventana de admin
                             }
@@ -252,7 +249,7 @@
             this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             this.writer = new PrintWriter(socket.getOutputStream(), true);
 
-            writer.println("/sendUser "+userName+" "+userType);
+
             // Setting up a thread to continuously listen for server messages
             Thread listenThread = new Thread(() -> {
                 Scanner in = new Scanner(reader);
@@ -272,6 +269,12 @@
                                 if(aux.length>1 && (filter!="" && filter!=" ")){
                                 String[] usuarios= aux[1].split(", ");
 
+                                  if(userType.equals("admin") && !usuariosActivos.contains("TODOS"))
+                                  {
+                                      HBox element = createDuplicateStructure("TODOS");
+                                      chatPlace.getChildren().add(element);
+                                      usuariosActivos.add("TODOS");
+                                  }
                                 for (String part : usuarios) { // Recorrer cada elemento del mensajeff
 
                                     if (part.contains(filter)){
@@ -333,6 +336,11 @@
 
                             chatPlace.getChildren().remove(2,chatPlace.getChildren().size());
                                 usuariosActivos.clear();
+
+                                if (userType.equals("admin")) {
+                                    HBox element = createDuplicateStructure("TODOS");
+                                    chatPlace.getChildren().add(element);
+                                }
                                 String [] aux= message.split(":");
                                 if(aux.length>1 && (filter!="" || filter!=" ")){
                                     String[] usuarios= aux[1].split(", ");
