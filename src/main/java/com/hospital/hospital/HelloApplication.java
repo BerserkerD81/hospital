@@ -10,14 +10,18 @@
     import javafx.scene.Node;
     import javafx.scene.Scene;
     import javafx.scene.control.*;
+    import javafx.scene.effect.Bloom;
     import javafx.scene.image.Image;
     import javafx.scene.image.ImageView;
+    import javafx.scene.layout.AnchorPane;
     import javafx.scene.layout.HBox;
+    import javafx.scene.layout.Pane;
     import javafx.scene.layout.VBox;
     import javafx.scene.paint.Color;
     import javafx.scene.text.Font;
     import javafx.scene.text.FontPosture;
     import javafx.scene.text.FontWeight;
+    import javafx.scene.text.Text;
     import javafx.stage.Stage;
 
     import java.io.BufferedReader;
@@ -65,12 +69,18 @@
         private HBox accountButton;
 
         private HBox searchBox;
+        private HBox chatBar;
 
         //variables para el registro
         private Button botonRegistro;
+        private HBox adminButton;
+        private Pane paneBox;
         private TextField registro_user;
         private TextField registro_password;
         private TextField registro_Checkpassword;
+        private AnchorPane panelRegistro;
+
+
         @Override
         public void start(Stage stage) throws IOException {
             // Pedir al usuario que ingrese su nombre por consola
@@ -140,12 +150,11 @@
                             stage.setTitle("Chat Hospital");
                             stage.setScene(scene);
                             stage.show();
-
-                            //si el tipo de usuario es admin se abre la ventana de administrador
-                            if (result.getString("tipoUsuario").equals("admin")) {
-                                System.out.println("usuario admin");
-                                //abrir ventana de admin
+                            if (!userType.equals("admin"))
+                            {
+                                adminButton.setVisible(false);
                             }
+
                         } else {
                             System.out.println("Usuario o contraseña incorrectos");
                             System.out.println("Usuario: " + user + " Contraseña: " + pass);
@@ -174,6 +183,15 @@
             accountButton = (HBox) scene.lookup("#account_button");
             menuBar = (VBox) scene.lookup("#menu_bar");
             searchBox =(HBox) scene.lookup("#searchBox");
+            adminButton = (HBox) scene.lookup("#admin_button");
+            chatBar = (HBox) scene.lookup("#chat_bar");
+            paneBox =(Pane) scene.lookup("#paneBox");
+            AnchorPane auxn = createCustomAnchorPane();
+            paneBox.getChildren().add(auxn);
+            panelRegistro =(AnchorPane) scene.lookup("#panelRegistro");
+            panelRegistro.setVisible(false);
+
+
 
             buttonsend.setOnMouseClicked(e -> {
                 String message = mesaggeinput.getText(); // Get the text from the input field
@@ -207,7 +225,9 @@
                 searchBar.setText("");
                 dm=true;
                 writer.println("/getUser"+" "+userName);
-
+                messagelog.setVisible(true);
+                chatBar.setVisible(true);
+                panelRegistro.setVisible(false);
             });
             groupButton.setOnMouseClicked(e -> {
                 for (Node node : menuBar.getChildren()) {
@@ -223,6 +243,11 @@
 
                 writer.println("/getGroup "+userName);
                 System.out.println("Listar Grupos");
+                messagelog.setVisible(true);
+                chatBar.setVisible(true);
+                panelRegistro.setVisible(false);
+                System.out.println(panelRegistro);
+
 
 
 
@@ -238,12 +263,35 @@
                 searchBox.setVisible(false);
                 chatPlace.getChildren().remove(2,chatPlace.getChildren().size());
                 usuariosActivos.clear();
+                messagelog.setVisible(false);
+                chatBar.setVisible(false);
+                panelRegistro.setVisible(false);
+
+            });
+            adminButton.setOnMouseClicked(e -> {
+                for (Node node : menuBar.getChildren()) {
+                    if (node instanceof HBox) {
+                        node.setStyle(""); // Establecer el estilo vacío para eliminar el fondo coloreado
+                    }
+                }
+                adminButton.setStyle("-fx-background-color: purple;"); // Cambiar el fondo a morado al hacer clic en este HBox
+                searchBox.setVisible(false);
+                chatPlace.getChildren().remove(2,chatPlace.getChildren().size());
+                usuariosActivos.clear();
+                messagelog.setVisible(false);
+                chatBar.setVisible(false);
+                panelRegistro.setVisible(true);
+
+
 
             });
 
 
             // Conectarse al servidor
             socket = new Socket("localhost", 9090); // Reemplazar "localhost" con la IP real si es necesario
+
+
+
 
             // Enviar el nombre de usuario al servidor
 
@@ -481,6 +529,91 @@
             // Enviar solicitud al servidor para obtener el historial entre los usuarios
             writer.println("/updateHistorial " + usuarioSolicitante + " " + usuarioBuscado+" "+mensaje);
         }
+
+
+        public AnchorPane createCustomAnchorPane() {
+            AnchorPane anchorPane = new AnchorPane();
+            anchorPane.setPrefWidth(433.0 * 1.5);
+            anchorPane.setPrefHeight(332.0 * 1.5);
+            anchorPane.setStyle("-fx-background-color: #64197d;");
+
+            ImageView imageView = new ImageView(new Image("https://github.com/BerserkerD81/hospital/blob/662f1359f8cf104abaed97b9f01b950e875dcd14/src/main/resources/com/hospital/hospital/images/usuario.png"));
+            imageView.setFitWidth(241.0 * 1.5);
+            imageView.setFitHeight(225.0 * 1.5);
+            imageView.setLayoutX(106.0 * 1.5);
+            imageView.setLayoutY(73.0 * 1.5);
+            imageView.setOpacity(0.13);
+            imageView.setPreserveRatio(true);
+
+            Bloom bloom = new Bloom();
+            bloom.setThreshold(0.08);
+            imageView.setEffect(bloom);
+
+            Text text1 = new Text("Nombre de usuario:");
+            text1.setFill(javafx.scene.paint.Color.WHITE);
+            text1.setLayoutX(64.0 * 1.5);
+            text1.setLayoutY(114.0 * 1.5);
+
+            Text text2 = new Text("Contraseña:");
+            text2.setFill(javafx.scene.paint.Color.WHITE);
+            text2.setLayoutX(64.0 * 1.5);
+            text2.setLayoutY(157.0 * 1.5);
+
+            Text text3 = new Text("Confirmar contraseña:");
+            text3.setFill(javafx.scene.paint.Color.WHITE);
+            text3.setLayoutX(64.0 * 1.5);
+            text3.setLayoutY(202.0 * 1.5);
+
+            TextField textField1 = new TextField();
+            textField1.setLayoutX(205.0 * 1.5);
+            textField1.setLayoutY(97.0 * 1.5);
+            textField1.setId("userRegistro");
+
+            TextField textField2 = new TextField();
+            textField2.setLayoutX(205.0 * 1.5);
+            textField2.setLayoutY(140.0 * 1.5);
+            textField2.setId("passRegistro");
+
+            TextField textField3 = new TextField();
+            textField3.setLayoutX(205.0 * 1.5);
+            textField3.setLayoutY(185.0 * 1.5);
+            textField3.setId("confirmarPass");
+
+            Text text4 = new Text("Registrar usuario");
+            text4.setFill(javafx.scene.paint.Color.WHITE);
+            text4.setLayoutX(41.0 * 1.5);
+            text4.setLayoutY(64.0 * 1.5);
+            text4.setFont(new Font(29.0 * 1.5));
+
+            Button button = new Button("Hecho");
+            button.setLayoutX(330.0 * 1.5);
+            button.setLayoutY(295.0 * 1.5);
+            button.setId("RegistroButton");
+
+            ComboBox comboBox = new ComboBox();
+            comboBox.setLayoutX(205.0 * 1.5);
+            comboBox.setLayoutY(227.0 * 1.5);
+            comboBox.setPrefWidth(150.0 * 1.5);
+            comboBox.setPromptText("tipo");
+            comboBox.getItems().addAll("medico","auxiliar","admision","examenes");
+            comboBox.setId("comboRegistro");
+
+            Text text5 = new Text("Tipo de Usuario:");
+            text5.setFill(javafx.scene.paint.Color.WHITE);
+            text5.setLayoutX(63.0 * 1.5);
+            text5.setLayoutY(244.0 * 1.5);
+
+            anchorPane.getChildren().addAll(
+                    imageView, text1, text2, text3, textField1, textField2, textField3,
+                    text4, button, comboBox, text5
+            );
+
+
+            anchorPane.setId("panelRegistro");
+            return anchorPane;
+        }
+
+
 
 
 
