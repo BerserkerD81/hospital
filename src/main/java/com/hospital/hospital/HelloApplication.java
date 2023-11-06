@@ -79,9 +79,37 @@
                 String pass = login_password.getText();
                 //Aqui hacer verificaciones
                 inicio = true;
-                stage.setTitle("Chat Hospital");
-                stage.setScene(scene);
-                stage.show();
+                //consultar base de datos (por ahora si el server)
+                String url = "jdbc:sqlite:src/main/resources/db/login.db";
+                Connection connect;
+                ResultSet result = null;
+                //si el usuario y contraseña son correctos se abre la ventana de chat
+                try {
+                    connect = DriverManager.getConnection(url);
+                    if (connect != null) {
+                        DatabaseMetaData meta = connect.getMetaData();
+                        System.out.println("El driver es " + meta.getDriverName());
+                        System.out.println("Se ha establecido una conexión con la base de datos");
+                        //prueba consultas
+                        PreparedStatement st = connect.prepareStatement("SELECT * FROM usuarios WHERE name = ? AND password = ?");
+                        st.setString(1, user);
+                        st.setString(2, pass);
+                        result = st.executeQuery();
+                        //imprimir resultados
+                        if (result.next()) {
+                            System.out.println(" usuario conectado!!!");
+                            stage.setTitle("Chat Hospital");
+                            stage.setScene(scene);
+                            stage.show();
+                        } else {
+                            System.out.println("Usuario o contraseña incorrectos");
+                            System.out.println("Usuario: " + user + " Contraseña: " + pass);
+                        }
+
+                    }
+                } catch (SQLException ex) {
+                    System.out.println(ex.getMessage());
+                }
             });
 
 
