@@ -54,12 +54,18 @@
         private Hyperlink login_register;
         //Variable chafa, esto es por mientras
         private boolean inicio = false;
+        //variables para el registro
+        private Button botonRegistro;
+        private TextField registro_user;
+        private TextField registro_password;
+        private TextField registro_Checkpassword;
         @Override
         public void start(Stage stage) throws IOException {
             // Pedir al usuario que ingrese su nombre por consola
             Scanner scanner = new Scanner(System.in);
             System.out.print("Por favor, ingrese su nombre de usuario: ");
             this.userName = scanner.nextLine();
+
             FXMLLoader escena_login = new FXMLLoader(HelloApplication.class.getResource("Inicio_sesion.fxml"));
             Scene login = new Scene(escena_login.load(), 419, 342);
             stage.setTitle("Iniciar Sesión");
@@ -69,7 +75,27 @@
             botonLogin = (Button) login.lookup("#login_accept");
             login_user = (TextField) login.lookup("#login_user");
             login_password = (TextField) login.lookup("#login_password");
-            login_register =  (Hyperlink) login.lookup("login_register");
+            login_register =  (Hyperlink) login.lookup("#login_register");
+
+            FXMLLoader registro = new FXMLLoader(HelloApplication.class.getResource("registrar_usuario.fxml"));
+            Scene registro_view = new Scene(registro.load(), 419, 342);
+
+            login_register.setOnAction(e ->{
+                stage.setTitle("Registrarse");
+                stage.setScene(registro_view);
+                stage.show();
+            });
+
+            botonRegistro = (Button) registro_view.lookup("#botonRegistro");
+            registro_user = (TextField) registro_view.lookup("#registro_user");
+            registro_password = (TextField) registro_view.lookup("#registro_pass");
+            registro_Checkpassword = (TextField) registro_view.lookup("#registro_check");
+            //Aqui añadir el usuario a la BD
+            botonRegistro.setOnMouseClicked(e -> {
+                stage.setTitle("Iniciar Sesión");
+                stage.setScene(login);
+                stage.show();
+            });
 
             FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("hello-view.fxml"));
             Scene scene = new Scene(fxmlLoader.load(), 1080, 720);
