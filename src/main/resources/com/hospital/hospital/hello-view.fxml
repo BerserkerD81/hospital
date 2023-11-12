@@ -3,7 +3,6 @@
 <?import java.lang.String?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
@@ -12,6 +11,7 @@
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
+<?import javafx.scene.text.TextFlow?>
 
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="720.0" prefWidth="1080.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
    <left>
@@ -86,17 +86,35 @@
                <children>
                   <HBox alignment="CENTER" prefHeight="97.0" prefWidth="723.0" styleClass="dark-gray-background" stylesheets="@values/styles.css">
                      <children>
-                        <Label prefHeight="87.0" prefWidth="202.0" text="chat_name" textFill="WHITE">
+                        <Label fx:id="recivier" prefHeight="87.0" prefWidth="202.0" text="chat_name" textFill="WHITE">
                            <font>
                               <Font size="36.0" />
                            </font>
                         </Label>
+                        <VBox prefHeight="48.0" prefWidth="122.0">
+                           <children>
+                              <HBox alignment="BASELINE_RIGHT" prefHeight="34.0" prefWidth="122.0">
+                                 <opaqueInsets>
+                                    <Insets />
+                                 </opaqueInsets>
+                              </HBox>
+                              <HBox fx:id="delete_button" alignment="CENTER" prefHeight="39.0" prefWidth="122.0" style="-fx-background-color: red;" styleClass="radius">
+                                 <children>
+                                    <Label text="Borrar">
+                                       <font>
+                                          <Font name="System Bold Italic" size="24.0" />
+                                       </font>
+                                    </Label>
+                                 </children>
+                              </HBox>
+                           </children>
+                        </VBox>
                      </children>
                   </HBox>
                   <Pane prefHeight="0.0" prefWidth="645.0" styleClass="dark-gray-background" stylesheets="@values/styles.css" />
                   <Pane fx:id="paneBox" prefHeight="527.0" prefWidth="723.0">
                      <children>
-                        <TextArea fx:id="message_area" editable="false" layoutX="43.0" layoutY="29.0" prefHeight="464.0" prefWidth="643.0" />
+                        <TextFlow fx:id="message_area" layoutX="33.0" layoutY="30.0" prefHeight="479.0" prefWidth="639.0" style="-fx-background-color: white;" />
                      </children>
                   </Pane>
                   <HBox fx:id="chat_bar" alignment="CENTER" prefHeight="36.0" prefWidth="610.0" stylesheets="@values/styles.css">

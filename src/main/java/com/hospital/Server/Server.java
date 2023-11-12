@@ -71,7 +71,7 @@ public class Server {
                 return aux;
             }
         }
-        return aux;
+        return null;
     }
     public static void getActiveUsers(String reciver) throws IOException {
         Socket Reciver =buascarSocket(reciver);
@@ -149,8 +149,9 @@ public class Server {
     public static void gruposDisponibles(String user) throws IOException {
         Socket socketuser =buascarSocket(user);
         PrintWriter escritor = new PrintWriter(socketuser.getOutputStream(), true);
-
         String aux= "";
+        StringBuilder medicos= new StringBuilder();
+        StringBuilder todos = new StringBuilder();
         Iterator<Map.Entry<User,Socket>> iterator= usuariosConSockets.entrySet().iterator();
         while (iterator.hasNext())
         {
@@ -161,9 +162,36 @@ public class Server {
                 break;
             }
         }
-        System.out.println("el usuario:"+user+"es de tipo "+aux);
-        escritor.println("Grupo:"+aux);
+        Iterator<Map.Entry<User,Socket>> iterator1= usuariosConSockets.entrySet().iterator();
+        while (iterator1.hasNext())
+        {
+            Map.Entry<User,Socket> entry =iterator1.next();
+            User usuario = entry.getKey();
 
+            if(!usuario.getUser().equals(user))
+            {todos.append(usuario.getUser()).append(" ");}
+            if(usuario.getType().equals("medico")){
+                medicos.append(usuario.getUser()).append(" ");
+            }
+        }
+
+
+        System.out.println("el usuario:"+user+"es de tipo "+aux);
+        if (!aux.equals("medico")) {
+            if(aux.equals("aseo")){
+                escritor.println("Grupo:" + aux+":"+todos);
+            } else if (aux.equals("admin")) {
+                escritor.println("Grupo:" +"URGENTE");
+
+            } else {
+                escritor.println("Grupo:" + aux+" "+"aseo"+":"+medicos);
+
+            }
+
+        }
+        else {
+            escritor.println("Grupo:" + aux+" "+"admision"+" "+"examenes"+" "+"pabellon"+" "+"aseo");
+        }
     }
 
     public static void updateHistorial(String usuario1, String usuario2, String mensaje) {
@@ -218,9 +246,42 @@ public class Server {
             {
                 Map.Entry<User,Socket> entry =iterator.next();
                 User user = entry.getKey();
-                if(user.getType().equals(grupo)){
-                    GroupUsers.add(user.getUser());
-                }
+                    if(grupo.equals("aseo")){
+                    GroupUsers.add(user.getUser());}
+                    else if (grupo.equals("admision")) {
+                        if (user.getType().equals("admision")|| user.getType().equals("medico"))
+                        {
+                            GroupUsers.add(user.getUser());
+                        }
+                    }
+                    else if (grupo.equals("pabellon")) {
+                        if (user.getType().equals("pabellon")|| user.getType().equals("medico"))
+                        {
+                            GroupUsers.add(user.getUser());
+                        }
+
+                    }
+                    else if (grupo.equals("examenes")) {
+                        if (user.getType().equals("examenes")|| user.getType().equals("medico"))
+                        {
+                            GroupUsers.add(user.getUser());
+                        }
+                    }
+                    else if (grupo.equals("medico")) {
+                        if ( user.getType().equals("medico"))
+                        {
+                            GroupUsers.add(user.getUser());
+                        }
+                    }
+
+                    else if (grupo.equals("URGENTE")) {
+                            if ( user.getType().equals("admin")){
+                                GroupUsers.add(user.getUser());
+                            }
+
+
+                    }
+
             }
             System.out.println("los usuarios del grupo"+grupo+" son: "+GroupUsers.toString());
 
@@ -259,7 +320,6 @@ public class Server {
                     }
                 }
             }
-
     }
     }
     public static void updateHistorialGrupo( String grupo, String mensaje) {
@@ -272,8 +332,38 @@ public class Server {
         {
             Map.Entry<User,Socket> entry =iterator.next();
             User user = entry.getKey();
-            if(user.getType().equals(grupo)){
-                GroupUsers.add(user.getUser());
+            if(grupo.equals("aseo")){
+                GroupUsers.add(user.getUser());}
+            else if (grupo.equals("admision")) {
+                if (user.getType().equals("admision")|| user.getType().equals("medico"))
+                {
+                    GroupUsers.add(user.getUser());
+                }
+            }
+            else if (grupo.equals("pabellon")) {
+                if (user.getType().equals("pabellon")|| user.getType().equals("medico"))
+                {
+                    GroupUsers.add(user.getUser());
+                }
+
+            }
+            else if (grupo.equals("examenes")) {
+                if (user.getType().equals("examenes")|| user.getType().equals("medico"))
+                {
+                    GroupUsers.add(user.getUser());
+                }
+            }
+            else if (grupo.equals("medico")) {
+                if ( user.getType().equals("medico"))
+                {
+                    GroupUsers.add(user.getUser());
+                }
+            }
+
+            else if (grupo.equals("URGENTE")) {
+                if ( user.getType().equals("admin")){
+                    GroupUsers.add(user.getUser());
+                }
             }
         }
         System.out.println("los usuarios del grupo"+grupo+" son: "+GroupUsers.toString());
@@ -359,18 +449,39 @@ public class Server {
 
                     if (mensaje == null) {
                         break;
-                    } else if (mensaje.contains("/getUser")) {
+                    } else if (mensaje.startsWith("/getUser")) {
                         String[] parts = mensaje.split(" ");
                         if (parts.length == 2) {
                             getActiveUsers(parts[1]);
                         } else {
                             enviarMensajeASockets(socket, "Comando incorrecto");
                         }
+                    } else if (mensaje.startsWith("/UpdateHistorialEspecifico")) {
+                        System.out.println("llegue");
+                        String[] parts = mensaje.split(" ",5);
+                        System.out.println(parts.length);
+
+                        if (parts.length==5){
+                            updateHistorialEspecifico(parts[3],parts[1],parts[2],parts[4]);
+                            getHistorialGrupal(parts[3]);
+                        }
+
+
+
                     }
                     else if (mensaje.startsWith("/updateHistorialGrupal")) {
-                        String[] parts = mensaje.split(" ");
+                        String[] parts = mensaje.split(" ",3);
                         System.out.println(parts.length);
-                        if (parts.length == 3) {
+                        if (parts.length ==3) {
+                            if(parts[1].equals("URGENTE"))
+                            {
+                                updateHistorialGrupo("URGENTE",parts[2]);
+                                updateHistorialGrupo("medico",parts[2]);
+                                updateHistorialGrupo("aseo",parts[2]);
+                                updateHistorialGrupo("admision",parts[2]);
+                                updateHistorialGrupo("pabellon",parts[2]);
+                                updateHistorialGrupo("examenes",parts[2]);
+                            }
                             updateHistorialGrupo(parts[1],parts[2]);
                         } else {
                             enviarMensajeASockets(socket, "Comando incorrecto");
@@ -380,7 +491,20 @@ public class Server {
                     else if (mensaje.startsWith("/getHistorialGrupal")) {
                         String[] parts = mensaje.split(" ");
                         if (parts.length == 2) {
+                            if (parts[1].equals("URGENTE"))
+                            {
+                                getHistorialGrupal("medico");
+                                getHistorialGrupal("aseo");
+                                getHistorialGrupal("admision");
+                                getHistorialGrupal("pabellon");
+                                getHistorialGrupal("examenes");
+                                getHistorialGrupal("URGENTE");
+
+
+                            }
+                            else {
                             Server.getHistorialGrupal(parts[1]);
+                            }
                         } else {
                             enviarMensajeASockets(socket, "Comando incorrecto");
                         }
@@ -388,68 +512,22 @@ public class Server {
                     else if (mensaje.startsWith("/getHistorial")) {
                         String[] parts = mensaje.split(" ");
                         if (parts.length == 3) {
-                            if(!(parts[2].contains("TODOS"))) {
-                                System.out.println("falla aca");
                                 System.out.println(parts[2]);
                                 Server.getHistorial(parts[1], parts[2]);
-                            }
-                            else {
-                                ArrayList<String> GroupUsers =new ArrayList<String>();
-
-
-                                Iterator<Map.Entry<User,Socket>> iterator= usuariosConSockets.entrySet().iterator();
-                                while (iterator.hasNext())
-                                {
-                                    Map.Entry<User,Socket> entry =iterator.next();
-                                    User user = entry.getKey();
-                                    GroupUsers.add(user.getUser());
-
-                                }
-
-                                for (String user : GroupUsers) {
-                                    if(!user.equals(parts[1]))
-                                    {Server.getHistorial(parts[1],user);
-                                }}
-
-                            }
-
                         }
-
-
                         else {
                             enviarMensajeASockets(socket, "Comando incorrecto");
                         }
                     } else if (mensaje.startsWith("/updateHistorial")) {
                         String[] parts = mensaje.split(" ", 4);
                         if (parts.length == 4) {
-                         if(!parts[2].contains("TODOS")) {
                              Server.updateHistorial(parts[1], parts[2], parts[3]);
-                         }
-                         else {
-                             ArrayList<String> GroupUsers =new ArrayList<String>();
-
-
-                             Iterator<Map.Entry<User,Socket>> iterator= usuariosConSockets.entrySet().iterator();
-                             while (iterator.hasNext())
-                             {
-                                 Map.Entry<User,Socket> entry =iterator.next();
-                                 User user = entry.getKey();
-                                 GroupUsers.add(user.getUser());
-                             }
-
-                             for (String user : GroupUsers)
-                             {
-                                 updateHistorial(parts[1],user,parts[3]);
-                             }
-
-                         }
-
                         }
                         else {
                             enviarMensajeASockets(socket, "Comando incorrecto");
                         }
                     }
-                    else if (mensaje.contains("/getGroup")) {
+                    else if (mensaje.startsWith("/getGroup")) {
                         String[] parts = mensaje.split(" ");
                         if (parts.length == 2) {
                             gruposDisponibles(parts[1]);
@@ -457,13 +535,22 @@ public class Server {
                             enviarMensajeASockets(socket, "Comando incorrecto");
                         }
 
-                    }
+                    } else if (mensaje.startsWith("/BorrarHistorial")) {
+                        String parts[] = mensaje.split(" ");
+                        if (parts.length == 4)
+                        {
+                            borrarHistorial(parts[1],parts[2]);
+                            if(parts[3].equals("true"))
+                            {
+                                System.out.println("legue");
+                                getHistorial(parts[1],parts[2]);
+                            }
+                            else if(parts[3].equals("false")){
+                                getHistorialGrupal(parts[2]);
+                            }
+                        }
 
-
-
-
-
-                    else {
+                    } else {
                         enviarMensajeASockets(socket, "Comando desconocido");
                     }
                 }
@@ -487,6 +574,55 @@ public class Server {
                     e.printStackTrace();
                 }
             }
+        }
+
+        private void updateHistorialEspecifico(String grupo, String user1, String user2,String mensaje) {
+
+            String nombreArchivo1 = user1 + "_" + grupo + "_chat.txt";
+            String nombreArchivo2 = user2 + "_" + grupo + "_chat.txt"; // Cambiado el nombre del segundo archivo
+
+            String rutaDirectorio = "src/main/java/com/hospital/Server/";
+
+            File archivo1 = new File(rutaDirectorio + nombreArchivo1);
+            File archivo2 = new File(rutaDirectorio + nombreArchivo2);
+
+            try (FileWriter fw1 = new FileWriter(archivo1, true);
+                 BufferedWriter bw1 = new BufferedWriter(fw1)) {
+
+                // Agregar el mensaje al final del archivo 1
+                bw1.write(mensaje + "\n");
+                System.out.println("Mensaje agregado al historial de " + user1 + " y " + grupo + " correctamente.");
+
+            } catch (IOException e) {
+                System.out.println("Ocurrió un error al intentar actualizar el historial de " + user1 + " y " + grupo + ": " + e.getMessage());
+                e.printStackTrace();
+            }
+
+            try (FileWriter fw2 = new FileWriter(archivo2, true);
+                 BufferedWriter bw2 = new BufferedWriter(fw2)) {
+
+                // Agregar el mensaje al final del archivo 2
+                bw2.write(mensaje + "\n");
+                System.out.println("Mensaje agregado al historial de " + user2 + " y " + grupo + " correctamente.");
+
+            } catch (IOException e) {
+                System.out.println("Ocurrió un error al intentar actualizar el historial de " + user2 + " y " + grupo + ": " + e.getMessage());
+                e.printStackTrace();
+            }
+
+
+        }
+        private void borrarHistorial(String parte1, String parte2)
+        {
+            String nombreArchivo1 = parte1 + "_" + parte2 + "_chat.txt";
+            String rutaDirectorio = "src/main/java/com/hospital/Server/";
+            File archivo1 = new File(rutaDirectorio + nombreArchivo1);
+            if(archivo1.exists())
+            {
+                archivo1.delete();
+            }
+
+
         }
 
         private void enviarMensajeASockets(Socket remitenteSocket, String mensaje) {

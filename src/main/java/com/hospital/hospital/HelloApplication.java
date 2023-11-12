@@ -18,10 +18,7 @@
     import javafx.scene.layout.Pane;
     import javafx.scene.layout.VBox;
     import javafx.scene.paint.Color;
-    import javafx.scene.text.Font;
-    import javafx.scene.text.FontPosture;
-    import javafx.scene.text.FontWeight;
-    import javafx.scene.text.Text;
+    import javafx.scene.text.*;
     import javafx.stage.Stage;
 
     import java.io.BufferedReader;
@@ -30,6 +27,10 @@
     import java.io.PrintWriter;
     import java.net.Socket;
     import java.util.*;
+    import java.util.stream.Stream;
+
+    import static java.lang.System.identityHashCode;
+    import static java.lang.System.out;
 
     public class HelloApplication extends Application {
         private boolean dm=false;
@@ -40,12 +41,14 @@
 
         public TextField mesaggeinput;
 
-        public TextArea messagelog;
+        public TextFlow messagelog;
         private Socket socket;
         private PrintWriter out;
         public String talkingTo="*";
 
         private  ArrayList<String> usuariosActivos = new ArrayList<>();
+        private  ArrayList<String> gruposActivos = new ArrayList<>();
+
 
         public PrintWriter writer;
         public BufferedReader reader;
@@ -79,6 +82,7 @@
         private TextField registro_password;
         private TextField registro_Checkpassword;
         private AnchorPane panelRegistro;
+        private HBox deleteButton;
 
 
         @Override
@@ -153,7 +157,15 @@
                             if (!userType.equals("admin"))
                             {
                                 adminButton.setVisible(false);
+                                if (userType.equals("aseo")){
+                                    messageButton.setVisible(false);
+                                }
                             }
+                            else
+                            {
+                                messageButton.setVisible(false);
+                            }
+
 
                         } else {
                             System.out.println("Usuario o contraseña incorrectos");
@@ -175,7 +187,7 @@
             chatPlace = (VBox) scene.lookup("#chat_place");
             buttonsend = (ImageView) scene.lookup("#send_button");
             mesaggeinput = (TextField) scene.lookup("#message_bar");
-            messagelog =(TextArea) scene.lookup("#message_area");
+            messagelog =(TextFlow) scene.lookup("#message_area");
             searchBar = (TextField) scene.lookup("#search_bar");
             searchButton = (ImageView)scene.lookup("#search_button");
             messageButton = (HBox) scene.lookup("#messages_button");
@@ -190,8 +202,19 @@
             paneBox.getChildren().add(auxn);
             panelRegistro =(AnchorPane) scene.lookup("#panelRegistro");
             panelRegistro.setVisible(false);
+            deleteButton =(HBox) scene.lookup("#delete_button");
 
 
+
+
+
+            deleteButton.setOnMouseClicked(e -> {
+
+
+                writer.println("/BorrarHistorial"+" "+userName+" "+talkingTo+" "+dm);
+                messagelog.getChildren().clear();
+
+            });
 
             buttonsend.setOnMouseClicked(e -> {
                 String message = mesaggeinput.getText(); // Get the text from the input field
@@ -202,8 +225,33 @@
                 solicitarHistorial(this.userName,talkingTo);
             }
                 else {
+                    if(userType.equals("medico") || userType.equals("admin")){
                     chatGrupo(talkingTo,userName+":"+message);
                     solicitarHistorialGrupo(talkingTo);
+                    }
+                    else {
+                        HBox aux = (HBox) chatPlace.getChildren().get(2);
+                        ComboBox aux1 = (ComboBox) aux.getChildren().get(1);
+                        if (aux1.getSelectionModel().isEmpty()) {
+                            chatGrupo(talkingTo, userName + ":" + message);
+                            solicitarHistorialGrupo(talkingTo);
+                        }
+
+                        else {
+                            String Selected = (String) aux1.getSelectionModel().getSelectedItem();
+                            System.out.println("answering to " + Selected);
+                            if (!Selected.equals("todos")) {
+                                String mensaje = userName + ":" + message;
+                                writer.println("/UpdateHistorialEspecifico" + " " + userName + " " + Selected + " " + this.talkingTo
+                                        + " " + mensaje);
+                                solicitarHistorialGrupo(talkingTo);
+                            } else {
+                                chatGrupo(talkingTo, userName + ":" + message);
+                                solicitarHistorialGrupo(talkingTo);
+                            }
+                        }
+                    }
+
 
                 }
 
@@ -235,10 +283,10 @@
                         node.setStyle(""); // Establecer el estilo vacío para eliminar el fondo coloreado
                     }
                 }
+                gruposActivos.clear();
                 groupButton.setStyle("-fx-background-color: purple;"); // Cambiar el fondo a morado al hacer clic en este HBox
                 searchBox.setVisible(false);
                 chatPlace.getChildren().remove(2,chatPlace.getChildren().size());
-                usuariosActivos.clear();
                 dm=false;
 
                 writer.println("/getGroup "+userName);
@@ -319,12 +367,6 @@
                                 if(aux.length>1 && (filter!="" && filter!=" ")){
                                 String[] usuarios= aux[1].split(", ");
 
-                                  if(userType.equals("admin") && !usuariosActivos.contains("TODOS"))
-                                  {
-                                      HBox element = createDuplicateStructure("TODOS");
-                                      chatPlace.getChildren().add(element);
-                                      usuariosActivos.add("TODOS");
-                                  }
                                 for (String part : usuarios) { // Recorrer cada elemento del mensajeff
 
                                     if (part.contains(filter)){
@@ -332,16 +374,24 @@
 
                                     if(!(userName+"-"+userType).equals(part) && !usuariosActivos.contains(part))
                                     {
+                                        if (userType.equals("medico") && !part.contains("-aseo")){
 
                                         usuariosActivos.add(part);
                                         HBox elementBox = createDuplicateStructure(part);
                                         chatPlace.getChildren().add(elementBox);
-                                    }}
+                                        } else if (!userType.equals("medico") && part.contains("medico")) {
+                                            usuariosActivos.add(part);
+                                            HBox elementBox = createDuplicateStructure(part);
+                                            chatPlace.getChildren().add(elementBox);
+
+
+                                        }
+                                    }
+                                    }
 
                                 }}
                             }
-
-                            if(message.startsWith("Desconectado")){
+                             if(message.startsWith("Desconectado")){
                                 System.out.println(message);
                                 String userToDisconnect = message.split(": ")[1];
                                 System.out.println(userToDisconnect);
@@ -354,7 +404,12 @@
                                                 for (Node vboxChild : vbox.getChildren()) {
                                                     if (vboxChild instanceof Label label && label.getText().equals(userToDisconnect)) {
                                                         System.out.println("Se encontró el texto en la etiqueta: " + label.getText());
+
                                                         usuariosActivos.remove(label.getText());
+                                                        if(userToDisconnect.equals(talkingTo))
+                                                        {
+                                                            talkingTo="";
+                                                        }
                                                         iterator.remove(); // Utiliza el iterador para eliminar el elemento de manera segura
                                                         break;
                                                     }
@@ -365,32 +420,27 @@
                                 }
 
                             }
-                            if (message.startsWith("Historial entre")) {
+                             if (message.startsWith("Historial entre")) {
                                 String[] aux = message.split("\\*");
                                 System.out.println(Arrays.toString(aux));
                                 if(aux.length>3){
                                     String[] aux1 = aux[3].split(",-");
-                                    StringBuilder historial = new StringBuilder();
-                                    for (String mlog:aux1)
-                                    {
-                                        historial.append(mlog).append("\n");
-                                    }
-
                                     if (aux[1].equals(talkingTo) || aux[2].equals(talkingTo)) {
-                                        messagelog.setText("");
-                                        System.out.println(historial);
-                                        messagelog.setText(historial.toString());
+                                        messagelog.getChildren().clear();
+                                        for (String mlog:aux1)
+                                        {
+                                            processLine(messagelog, mlog);
+                                            messagelog.getChildren().add(new Text("\n"));
+                                        }
+                                        //messagelog.setText(historial.toString());
                                     }
-                                }}
+                                }
+                            }
                             if (message.startsWith("/activos:")&&dm){
 
                             chatPlace.getChildren().remove(2,chatPlace.getChildren().size());
                                 usuariosActivos.clear();
 
-                                if (userType.equals("admin")) {
-                                    HBox element = createDuplicateStructure("TODOS");
-                                    chatPlace.getChildren().add(element);
-                                }
                                 String [] aux= message.split(":");
                                 if(aux.length>1 && (filter!="" || filter!=" ")){
                                     String[] usuarios= aux[1].split(", ");
@@ -402,10 +452,18 @@
 
                                             if(!(userName+"-"+userType).equals(part)  && !usuariosActivos.contains(part))
                                             {
+                                                if (userType.equals("medico") && !part.contains("-aseo")){
 
-                                                usuariosActivos.add(part);
-                                                HBox elementBox = createDuplicateStructure(part);
-                                                chatPlace.getChildren().add(elementBox);
+                                                    usuariosActivos.add(part);
+                                                    HBox elementBox = createDuplicateStructure(part);
+                                                    chatPlace.getChildren().add(elementBox);
+                                                } else if (!userType.equals("medico") && part.contains("medico")) {
+                                                    usuariosActivos.add(part);
+                                                    HBox elementBox = createDuplicateStructure(part);
+                                                    chatPlace.getChildren().add(elementBox);
+
+
+                                                }
                                             }}
 
                                     }}
@@ -420,33 +478,145 @@
 
                                             if(!(userName+"-"+userType).equals(part) && !usuariosActivos.contains(part))
                                             {
+                                                if (userType.equals("medico") && !part.contains("-aseo")){
 
-                                                usuariosActivos.add(part);
-                                                HBox elementBox = createDuplicateStructure(part);
-                                                chatPlace.getChildren().add(elementBox);
+                                                    usuariosActivos.add(part);
+                                                    HBox elementBox = createDuplicateStructure(part);
+                                                    chatPlace.getChildren().add(elementBox);
+                                                } else if (!userType.equals("medico") && part.contains("medico")) {
+                                                    usuariosActivos.add(part);
+                                                    HBox elementBox = createDuplicateStructure(part);
+                                                    chatPlace.getChildren().add(elementBox);
+
+
+                                                }
                                             }
                                         }
                                     }
                                 }
                         }
                         else if (message.startsWith("Grupo:")){
+
+                            //chatPlace.getChildren().remove(2,chatPlace.getChildren().size());
                                 String [] aux= message.split(":");
-                                HBox grupo = createDuplicateStructure(aux[1]);
-                                chatPlace.getChildren().add(grupo);
+                                String [] grupos = aux[1].split(" ");
+                                if(userType.equals("medico")|| userType.equals("admin")) {
+                                    for (String group : grupos)
+                                {
+                                    if(!gruposActivos.contains(group)){
+                                        gruposActivos.add(group);
+                                    HBox grupo = createDuplicateStructure(group);
+                                    chatPlace.getChildren().add(grupo);}
+
+                                }
 
                             }
+                            else {
+                                    if(aux.length>=3){
+                                String [] actvos = aux[2].split(" ");
+                                usuariosActivos.clear();
+                                usuariosActivos.addAll(Arrays.asList(actvos));
+                                usuariosActivos.add("todos");
+                                HBox answering = resGrupo();
+                                chatPlace.getChildren().add(answering);}
+                                else
+                                {
+                                    usuariosActivos.clear();
+                                    usuariosActivos.add("todos");
+                                    HBox answering = resGrupo();
+                                    chatPlace.getChildren().add(answering);
+
+                                }
 
 
-                        });
 
 
+                                for (String group : grupos)
+                                {
+                                    if(!gruposActivos.contains(group)){
+                                    HBox grupo = createDuplicateStructure(group);
 
+                                    chatPlace.getChildren().add(grupo);}
+                                }
+                            }
+                        }
+                            });
                     }
                 }
 
             });
             listenThread.start();
         }
+
+        private void processLine(TextFlow textFlow, String text) {
+            int startIndex = 0;
+            int endIndex;
+
+            while ((endIndex = findNextStyleMarker(text, startIndex)) != -1) {
+                // Agregar texto normal antes de la parte formateada
+                if (startIndex < endIndex) {
+                    addTextWithStyle(textFlow, text.substring(startIndex, endIndex), null);
+                }
+
+                // Extraer el contenido formateado y los marcadores
+                String formattedText = text.substring(endIndex + 2, findNextStyleMarker(text, endIndex + 2));
+                String markers = text.substring(endIndex, endIndex + 2);
+
+                // Aplicar los estilos según los marcadores
+                applyStyles(textFlow, formattedText, markers);
+
+                // Actualizar el índice de inicio para la próxima iteración
+                startIndex = findNextStyleMarker(text, endIndex + 2) + 2;
+            }
+
+            // Agregar el texto restante después de la última parte formateada
+            if (startIndex < text.length()) {
+                addTextWithStyle(textFlow, text.substring(startIndex), null);
+            }
+        }
+
+        private int findNextStyleMarker(String text, int startIndex) {
+            int nextBoldIndex = text.indexOf("$$", startIndex);
+            int nextItalicIndex = text.indexOf("%%", startIndex);
+            int nextBoldItalicIndex = text.indexOf("&&", startIndex);
+
+            // Devolver el índice del siguiente marcador, o -1 si no hay más marcadores
+            return Stream.of(nextBoldIndex, nextItalicIndex, nextBoldItalicIndex)
+                    .filter(index -> index != -1)
+                    .min(Integer::compare)
+                    .orElse(-1);
+        }
+
+        private void applyStyles(TextFlow textFlow, String text, String markers) {
+            if (markers.contains("$$")) {
+                addTextWithStyle(textFlow, text, "bold");
+            } else if (markers.contains("%%")) {
+                addTextWithStyle(textFlow, text, "italic");
+            } else if (markers.contains("&&")) {
+                addTextWithStyle(textFlow, text, "bold-italic");
+            }
+            // Puedes agregar más estilos según tus necesidades
+        }
+
+        private void addTextWithStyle(TextFlow textFlow, String text, String style) {
+            Text styledText = new Text(text);
+            if (style != null) {
+                switch (style) {
+                    case "bold":
+                        styledText.setStyle("-fx-font-weight: bold;");
+                        break;
+                    case "italic":
+                        styledText.setStyle("-fx-font-style: italic;");
+                        break;
+                    case "bold-italic":
+                        styledText.setStyle("-fx-font-weight: bold; -fx-font-style: italic;");
+                        break;
+                    // Puedes agregar más casos según tus necesidades
+                }
+            }
+            textFlow.getChildren().add(styledText);
+        }
+
         public HBox createDuplicateStructure(String user) {
             HBox hBox = new HBox();
 
@@ -482,8 +652,10 @@
 
             // Agregar un controlador de eventos al HBox para cambiar el fondo al hacer clic
             hBox.setOnMouseClicked(event -> {
+
+
                 // Recorrer todos los hijos del chatPlace para quitar el fondo coloreado
-                messagelog.setText("");
+                messagelog.getChildren().clear();
                 for (Node node : chatPlace.getChildren()) {
                     if (node instanceof HBox) {
                         node.setStyle(""); // Establecer el estilo vacío para eliminar el fondo coloreado
@@ -495,15 +667,32 @@
                 String username = label.getText();
                 // Imprimir en la consola el mensaje "Hablando con [nombre del usuario]"
                 this.talkingTo = username.split("-")[0];
-                messagelog.setText("");
+                messagelog.getChildren().clear();
                 if (dm){
 
                     System.out.println("Hablando con " + talkingTo);
                 solicitarHistorial(this.userName, talkingTo);
             }
                 else {
+                    if(!userType.equals("admin") && !userType.equals("medico")){
+                        HBox aux = (HBox) chatPlace.getChildren().get(2);
+                        ComboBox aux1 = (ComboBox) aux.getChildren().get(1);
+                        aux1.setVisible(true);
+                        if(!userType.equals("aseo") && username.equals("aseo"))
+                        {
+                            aux1.setVisible(false);
+                        } else if (!userType.equals("aseo") && !username.equals("aseo")) {
+                            aux1.setVisible(true);
+                        } else if (userType.equals("aseo") &&  username.equals("aseo")) {
+                            aux1.setVisible(true);
+                        }
+
+
+                    }
                     talkingTo=username;
+
                     solicitarHistorialGrupo(username);
+
                 }
 
 
@@ -531,6 +720,34 @@
         }
 
 
+
+        public HBox resGrupo(){
+            HBox hbox = new HBox();
+            hbox.setId("answeringto");
+            hbox.setAlignment(javafx.geometry.Pos.CENTER);
+            hbox.setPrefHeight(100.0);
+            hbox.setPrefWidth(200.0);
+
+            Label label = new Label("Respondiendo");
+            label.setPrefHeight(50.0);
+            label.setPrefWidth(104.0);
+            label.setTextFill(javafx.scene.paint.Color.WHITE);
+            HBox.setMargin(label, new Insets(0, 0, 0, 30.0));
+
+            Font font = Font.font("System Bold Italic", 14.0);
+            label.setFont(font);
+
+            ComboBox<String> comboBox = new ComboBox<>();
+            comboBox.setPrefHeight(26.0);
+            comboBox.setPrefWidth(131.0);
+            for (String usuario : usuariosActivos) {
+                comboBox.getItems().add(usuario);
+            }
+            hbox.getChildren().addAll(label, comboBox);
+
+            return hbox;
+
+        }
         public AnchorPane createCustomAnchorPane() {
             AnchorPane anchorPane = new AnchorPane();
             anchorPane.setPrefWidth(433.0 * 1.5);
