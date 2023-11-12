@@ -3,7 +3,6 @@
 <?import java.lang.String?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
@@ -12,42 +11,55 @@
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
+<?import javafx.scene.text.TextFlow?>
 
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="720.0" prefWidth="1080.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
    <left>
       <HBox prefHeight="720.0" prefWidth="1224.0">
          <children>
-            <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" styleClass="dark-gray-background" stylesheets="@values/styles.css">
+            <VBox fx:id="menu_bar" alignment="CENTER" prefHeight="200.0" prefWidth="100.0" styleClass="dark-gray-background" stylesheets="@values/styles.css">
                <children>
-                  <ImageView fx:id="dm_button" fitHeight="48.0" fitWidth="38.0" pickOnBounds="true" preserveRatio="true">
-                     <image>
-                        <Image url="@images/chat.png" />
-                     </image>
-                     <VBox.margin>
-                        <Insets top="20.0" />
-                     </VBox.margin>
-                  </ImageView>
-                  <ImageView fx:id="group_button" fitHeight="48.0" fitWidth="38.0" pickOnBounds="true" preserveRatio="true">
-                     <image>
-                        <Image url="@images/grupo.png" />
-                     </image>
-                     <VBox.margin>
-                        <Insets top="20.0" />
-                     </VBox.margin>
-                  </ImageView>
-                  <ImageView fx:id="account_button" fitHeight="48.0" fitWidth="38.0" pickOnBounds="true" preserveRatio="true">
-                     <image>
-                        <Image url="@images/usuario.png" />
-                     </image>
-                     <VBox.margin>
-                        <Insets top="20.0" />
-                     </VBox.margin>
-                  </ImageView>
+                  <HBox fx:id="admin_button" alignment="CENTER" prefHeight="52.0" prefWidth="60.0">
+                     <children>
+                        <ImageView fitHeight="48.0" fitWidth="38.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@images/admin.png" />
+                           </image>
+                        </ImageView>
+                     </children>
+                  </HBox>
+                  <HBox fx:id="messages_button" alignment="CENTER" prefHeight="52.0" prefWidth="60.0">
+                     <children>
+                        <ImageView fitHeight="48.0" fitWidth="38.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@images/chat.png" />
+                           </image>
+                        </ImageView>
+                     </children>
+                  </HBox>
+                  <HBox fx:id="group_button" alignment="CENTER" prefHeight="48.0" prefWidth="38.0">
+                     <children>
+                        <ImageView fitHeight="48.0" fitWidth="38.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@images/grupo.png" />
+                           </image>
+                        </ImageView>
+                     </children>
+                  </HBox>
+                  <HBox fx:id="account_button" alignment="CENTER" prefHeight="48.0" prefWidth="38.0">
+                     <children>
+                        <ImageView fitHeight="48.0" fitWidth="38.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@images/usuario.png" />
+                           </image>
+                        </ImageView>
+                     </children>
+                  </HBox>
                </children>
             </VBox>
             <VBox fx:id="chat_place" prefHeight="720.0" prefWidth="300.0" styleClass="gray-background" stylesheets="@values/styles.css">
                <children>
-                  <HBox alignment="CENTER" prefHeight="36.0" prefWidth="200.0" stylesheets="@values/styles.css">
+                  <HBox fx:id="searchBox" alignment="CENTER" prefHeight="36.0" prefWidth="200.0" stylesheets="@values/styles.css">
                      <children>
                         <ImageView fx:id="search_button" fitHeight="26.0" fitWidth="31.0" pickOnBounds="true" preserveRatio="true">
                            <image>
@@ -57,7 +69,7 @@
                               <Insets />
                            </HBox.margin>
                         </ImageView>
-                        <TextField fx:id="search_bar" promptText="buscar" styleClass="transparent-background" stylesheets="@values/styles.css" />
+                        <TextField fx:id="search_bar" promptText="buscar" style="-fx-text-fill: #FFFFFF;" styleClass="transparent-background" stylesheets="@values/styles.css" />
                      </children>
                      <VBox.margin>
                         <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
@@ -74,22 +86,40 @@
                <children>
                   <HBox alignment="CENTER" prefHeight="97.0" prefWidth="723.0" styleClass="dark-gray-background" stylesheets="@values/styles.css">
                      <children>
-                        <Label prefHeight="87.0" prefWidth="202.0" text="chat_name" textFill="WHITE">
+                        <Label fx:id="recivier" prefHeight="87.0" prefWidth="202.0" text="chat_name" textFill="WHITE">
                            <font>
                               <Font size="36.0" />
                            </font>
                         </Label>
+                        <VBox prefHeight="48.0" prefWidth="122.0">
+                           <children>
+                              <HBox alignment="BASELINE_RIGHT" prefHeight="34.0" prefWidth="122.0">
+                                 <opaqueInsets>
+                                    <Insets />
+                                 </opaqueInsets>
+                              </HBox>
+                              <HBox fx:id="delete_button" alignment="CENTER" prefHeight="39.0" prefWidth="122.0" style="-fx-background-color: red;" styleClass="radius">
+                                 <children>
+                                    <Label text="Borrar">
+                                       <font>
+                                          <Font name="System Bold Italic" size="24.0" />
+                                       </font>
+                                    </Label>
+                                 </children>
+                              </HBox>
+                           </children>
+                        </VBox>
                      </children>
                   </HBox>
                   <Pane prefHeight="0.0" prefWidth="645.0" styleClass="dark-gray-background" stylesheets="@values/styles.css" />
-                  <Pane prefHeight="527.0" prefWidth="723.0">
+                  <Pane fx:id="paneBox" prefHeight="527.0" prefWidth="723.0">
                      <children>
-                        <TextArea fx:id="message_area" layoutX="43.0" layoutY="29.0" prefHeight="464.0" prefWidth="643.0" />
+                        <TextFlow fx:id="message_area" layoutX="33.0" layoutY="30.0" prefHeight="479.0" prefWidth="639.0" style="-fx-background-color: white;" />
                      </children>
                   </Pane>
-                  <HBox alignment="CENTER" prefHeight="36.0" prefWidth="610.0" stylesheets="@values/styles.css">
+                  <HBox fx:id="chat_bar" alignment="CENTER" prefHeight="36.0" prefWidth="610.0" stylesheets="@values/styles.css">
                      <children>
-                        <TextField fx:id="message_bar" prefHeight="26.0" prefWidth="617.0" promptText="Escribe tu mensaje" styleClass="transparent-background" stylesheets="@values/styles.css" />
+                        <TextField fx:id="message_bar" prefHeight="26.0" prefWidth="617.0" promptText="Escribe tu mensaje" style="-fx-text-fill: #FFFFFF;" styleClass="transparent-background" stylesheets="@values/styles.css" />
                         <ImageView fx:id="send_button" fitHeight="26.0" fitWidth="31.0" pickOnBounds="true" preserveRatio="true">
                            <image>
                               <Image url="@images/enviar.png" />
