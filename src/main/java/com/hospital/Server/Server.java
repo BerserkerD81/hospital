@@ -493,6 +493,7 @@ public class Server {
                         if (parts.length == 2) {
                             if (parts[1].equals("URGENTE"))
                             {
+
                                 getHistorialGrupal("medico");
                                 getHistorialGrupal("aseo");
                                 getHistorialGrupal("admision");
