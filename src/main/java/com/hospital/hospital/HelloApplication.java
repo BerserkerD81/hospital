@@ -62,6 +62,7 @@
         private Hyperlink login_register;
         //Variable chafa, esto es por mientras
         private boolean inicio = false;
+        private Boolean change =false;
         private String userType;
 
         private ImageView searchButton;
@@ -139,20 +140,83 @@
                 //si el usuario y contraseña son correctos se abre la ventana de chat
                 try {
                     connect = DriverManager.getConnection(url);
-                    if (connect != null) {
-                        DatabaseMetaData meta = connect.getMetaData();
-                        System.out.println("El driver es " + meta.getDriverName());
-                        System.out.println("Se ha establecido una conexión con la base de datos");
-                        //consulta de verificacion de usuario
-                        PreparedStatement st = connect.prepareStatement("SELECT * FROM usuarios WHERE name = ? AND password = ?");
-                        st.setString(1, user);
-                        st.setString(2, pass);
-                        result = st.executeQuery();
-                        //respuesta de la consulta
-                        if (result.next()) {
+
+                    if(!change){
+                        if (connect != null  ) {
+                            DatabaseMetaData meta = connect.getMetaData();
+                            System.out.println("El driver es " + meta.getDriverName());
+                            System.out.println("Se ha establecido una conexión con la base de datos");
+                            //consulta de verificacion de usuario
+                            PreparedStatement st = connect.prepareStatement("SELECT * FROM usuarios WHERE name = ? AND password = ?");
+                            st.setString(1, user);
+                            st.setString(2, pass);
+                            result = st.executeQuery();
+                            //respuesta de la consulta
+                            if (result.next()) {
+                                if(result.getInt("Ftime")==0)
+                                {
+                                    System.out.println(" usuario conectado!!!");
+                                    this.userName = user;
+                                    this.userType =result.getString("tipoUsuario");
+                                    writer.println("/sendUser "+userName+" "+userType);
+                                    stage.setTitle("Chat Hospital");
+                                    stage.setScene(scene);
+                                    stage.show();
+                                    if (!userType.equals("admin"))
+                                    {
+                                        adminButton.setVisible(false);
+                                        accountButton.setVisible(false);
+                                        if (userType.equals("aseo")){
+                                            messageButton.setVisible(false);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        messageButton.setVisible(false);
+                                    }
+                                    change = false;
+                                    connect.close();
+
+                                }
+                                else
+                                {
+                                    System.out.println("cambia la pass");
+                                    // Cambios aquí:
+                                    login_user.setVisible(false); // Hacer invisible el campo login_user
+                                    Text text1 = (Text) login.lookup("#text1");
+                                    Text text2 = (Text) login.lookup("#text2");
+                                    Text text3 = (Text) login.lookup("#text3");
+
+                                    text1.setVisible(false);
+                                    text2.setText("Ingresa tu nueva pass");
+                                    text2.setLayoutX(1);
+                                    text3.setText("Cambia tu contraseña para iniciar");
+                                    text3.setLayoutX(100);
+                                    change= true;
+                                    this.userName = user;
+                                    this.userType =result.getString("tipoUsuario");
+                                    connect.close();
+                                }
+
+                            } else {
+                                System.out.println("Usuario o contraseña incorrectos");
+                                System.out.println("Usuario: " + user + " Contraseña: " + pass);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        String newPassword = login_password.getText();
+                        if(!newPassword.isEmpty()) {
+                            // Actualizar la contraseña del usuario
+                            PreparedStatement updatePassword = connect.prepareStatement("UPDATE usuarios SET password = ?, Ftime = ? WHERE name = ?");
+                            updatePassword.setString(1, newPassword);
+                            updatePassword.setInt(2, 0); // Asignar el nuevo valor para Ftime (puedes cambiarlo según tus necesidades)
+                            updatePassword.setString(3, user);
+                            updatePassword.executeUpdate();
+                            updatePassword.executeUpdate();
+                            updatePassword.close();
                             System.out.println(" usuario conectado!!!");
-                            this.userName = user;
-                            this.userType =result.getString("tipoUsuario");
                             writer.println("/sendUser "+userName+" "+userType);
                             stage.setTitle("Chat Hospital");
                             stage.setScene(scene);
@@ -169,20 +233,18 @@
                             {
                                 messageButton.setVisible(false);
                             }
+                            // Cambios aquí:
+                            change = false;
+                            connect.close();
 
-
-                        } else {
-                            System.out.println("Usuario o contraseña incorrectos");
-                            System.out.println("Usuario: " + user + " Contraseña: " + pass);
                         }
-
-
                     }
-                    connect.close();
+
                 } catch (SQLException ex) {
                     System.out.println(ex.getMessage());
                 }
             });
+
 
 
             if(inicio){ //Inicio chat cuando se inicia sesión
@@ -233,6 +295,7 @@
                 String pass = registro_pass.getText();
                 String check = registro_check.getText();
                 String tipo = registro_tipo.getValue();
+                Integer aux =1;
 
 
                 String url  ="jdbc:sqlite:src/main/resources/db/login.db";
@@ -249,7 +312,7 @@
                                 ID = maxID + 1;
                             }
                             System.out.println("ID actual"+ID);
-                            PreparedStatement algo = connect.prepareStatement("INSERT INTO usuarios (ID,name, correo, password, rut, correo,tipoUsuario) " + "VALUES (?, ?, ?, ?, ?, ?, ?)");
+                            PreparedStatement algo = connect.prepareStatement("INSERT INTO usuarios (ID,name, correo, password, rut, correo,tipoUsuario,Ftime) " + "VALUES (?, ?, ?, ?, ?, ?, ?,?)");
                             algo.setInt(1,ID);
                             algo.setString(2, user);
                             algo.setString(3, correo);
@@ -257,6 +320,7 @@
                             algo.setString(5, rut);
                             algo.setString(6, correo);
                             algo.setString(7, tipo);
+                            algo.setInt(8,aux);
 
                             algo.executeUpdate();
                         }
