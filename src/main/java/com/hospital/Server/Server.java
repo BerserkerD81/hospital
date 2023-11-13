@@ -1,16 +1,162 @@
 package com.hospital.Server;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.sql.*;
 
 import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 public class Server {
     private static final int PUERTO = 9090;
     public static Map<User, Socket> usuariosConSockets = new HashMap<>();
     public static List<Socket> listaSockets = new CopyOnWriteArrayList<>();
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final String JSON_FILE_PATH = "src/main/resources/db/"+"adminlog.json"; // Reemplaza con la ruta adecuada
+
+
+
+    public static Map<String, Map<String, Map<String, Integer>>> leerJSON() {
+        try {
+            File file = new File(JSON_FILE_PATH);
+
+            // Verificar si el archivo existe
+            if (!file.exists()) {
+                // Si no existe, crear un nuevo archivo vacío
+                file.createNewFile();
+                return new HashMap<>();
+            }
+
+            // El archivo existe, leer y devolver los datos
+            return objectMapper.readValue(file, Map.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static void escribirJSON(Map<String, Map<String, Map<String, Integer>>> data) {
+        try {
+            objectMapper.writeValue(new File(JSON_FILE_PATH), data);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void agregarUsuario(String usuarioId) {
+        Map<String, Map<String, Map<String, Integer>>> datos = leerJSON();
+
+        if (datos == null) {
+            datos = new HashMap<>();
+        }
+
+        // Verificar si el usuario ya existe
+        if (datos.containsKey(usuarioId)) {
+            System.out.println("El usuario ya existe.");
+            return;  // No hacer nada si el usuario ya existe
+        }
+
+        // Crear un nuevo usuario si no existe
+        Map<String, Map<String, Integer>> nuevoUsuario = new HashMap<>();
+        nuevoUsuario.put("mensajes_privados", new HashMap<>());
+        nuevoUsuario.put("mensajes_grupales", new HashMap<>());
+
+        datos.put(usuarioId, nuevoUsuario);
+
+        escribirJSON(datos);
+    }
+
+
+
+    public static List<Map<String, Integer>> obtenerMensajesPrivadosEnRango(String usuarioId, String fechaInicio, String fechaFin) {
+        return obtenerMensajesEnRango(usuarioId, "mensajes_privados", fechaInicio, fechaFin);
+    }
+    public static List<Map<String, Integer>> obtenerMensajesGrupalesEnRango(String usuarioId, String fechaInicio, String fechaFin) {
+        return obtenerMensajesEnRango(usuarioId, "mensajes_grupales", fechaInicio, fechaFin);
+    }
+    private static List<Map<String, Integer>> obtenerMensajesEnRango(String usuarioId, String tipoMensaje, String fechaInicio, String fechaFin) {
+        Map<String, Map<String, Map<String, Integer>>> datos = leerJSON();
+
+        // Crear el usuario si no existe
+        if (!datos.containsKey(usuarioId)) {
+            agregarUsuario(usuarioId);
+        }
+
+        List<Map<String, Integer>> mensajesEnRango = new ArrayList<>();
+        Map<String, Map<String, Integer>> usuario = datos.get(usuarioId);
+
+        usuario.computeIfAbsent(tipoMensaje, key -> new HashMap<>());
+
+        usuario.get(tipoMensaje).forEach((fecha, cantidad) -> {
+            if (fecha.compareTo(fechaInicio) >= 0 && fecha.compareTo(fechaFin) <= 0) {
+                Map<String, Integer> mensaje = new HashMap<>();
+                mensaje.put(fecha, cantidad);
+                mensajesEnRango.add(mensaje);
+            }
+        });
+
+        return mensajesEnRango;
+    }
+    public static List<String> obtenerListaUsuariosJson() {
+        Map<String, Map<String, Map<String, Integer>>> datos = leerJSON();
+
+        if (datos == null) {
+            return new ArrayList<>();
+        }
+
+        return new ArrayList<>(datos.keySet());
+    }
+
+    public static void enviarUsuariosAdmin(String admin)
+        {
+            Socket Reciver =buascarSocket(admin);
+            StringBuilder aux= new StringBuilder();
+            List<String> listaUsuarios = obtenerListaUsuariosJson();
+            for (String usuario : listaUsuarios) {
+                aux.append(usuario).append(" ");
+
+            }
+            try {
+                PrintWriter escritor = new PrintWriter(Reciver.getOutputStream(), true);
+                escritor.println("EstadisticasUsers:"+aux);
+
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+
+
+    public static void sumarMensajesPrivados(String usuarioId, String fecha, int cantidad) {
+        sumarMensajes(usuarioId, "mensajes_privados", fecha, cantidad);
+    }
+
+    public static void sumarMensajesGrupales(String usuarioId, String fecha, int cantidad) {
+        sumarMensajes(usuarioId, "mensajes_grupales", fecha, cantidad);
+    }
+
+    private static void sumarMensajes(String usuarioId, String tipoMensaje, String fecha, int cantidad) {
+        Map<String, Map<String, Map<String, Integer>>> datos = leerJSON();
+
+        // Crear el usuario si no existe
+        if (!datos.containsKey(usuarioId)) {
+            agregarUsuario(usuarioId);
+        }
+
+        Map<String, Map<String, Integer>> usuario = datos.get(usuarioId);
+
+        usuario.computeIfAbsent(tipoMensaje, key -> new HashMap<>());
+
+        Map<String, Integer> mensajesPorFecha = usuario.get(tipoMensaje);
+
+        mensajesPorFecha.merge(fecha, cantidad, Integer::sum);
+
+        System.out.println("llegue-al-save");
+        escribirJSON(datos);
+    }
 
 
     public static void main(String[] args) {
@@ -434,15 +580,7 @@ public class Server {
                     } else {
                         enviarMensajeASockets(socket, "Comando incorrecto");
                     }
-
-
-
                 }
-
-
-
-
-
                 while (true) {
                     String mensaje = lector.readLine();
                     System.out.println(mensaje);
@@ -456,14 +594,80 @@ public class Server {
                         } else {
                             enviarMensajeASockets(socket, "Comando incorrecto");
                         }
-                    } else if (mensaje.startsWith("/UpdateHistorialEspecifico")) {
-                        System.out.println("llegue");
+                    }
+                    else if(mensaje.startsWith("/getEstadisticasU"))
+                    {
+                        String[] parts = mensaje.split(" ");
+                        if (parts.length==5)
+                        {
+                            int totalMensajesPrivados;
+                            int totalMensajesGrupales;
+                            List<Map<String, Integer>> mensajesPrivadosEnRango = obtenerMensajesPrivadosEnRango(parts[1], parts[2], parts[3]);
+                            if (mensajesPrivadosEnRango.isEmpty()) {
+                                System.out.println("No hay mensajes privados en el rango de fechas.");
+                                totalMensajesPrivados=0;
+                            } else {
+                                totalMensajesPrivados = mensajesPrivadosEnRango.stream()
+                                        .mapToInt(mensag -> mensag.values().iterator().next())
+                                        .sum();
+                                //System.out.println("Total de mensajes privados en el rango de fechas: " + totalMensajesPrivados);
+                            }
+
+                            List<Map<String, Integer>> mensajesGrupalesEnRango = obtenerMensajesGrupalesEnRango(parts[1], parts[2], parts[3]);
+                            if (mensajesPrivadosEnRango.isEmpty()) {
+                                System.out.println("No hay mensajes privados en el rango de fechas.");
+                                totalMensajesGrupales=0;
+                            } else {
+                                totalMensajesGrupales = mensajesGrupalesEnRango.stream()
+                                        .mapToInt(mensag -> mensag.values().iterator().next())
+                                        .sum();
+                                ///System.out.println("Total de mensajes Grupales en el rango de fechas: " + totalMensajesGrupales);
+                            }
+                            System.out.println("Total de mensajes privados en el rango de fechas: " + totalMensajesPrivados);
+                            System.out.println("Total de mensajes Grupales en el rango de fechas: " + totalMensajesGrupales);
+
+
+                            Socket Reciver =buascarSocket(parts[4]);
+                            PrintWriter escritor = new PrintWriter(Reciver.getOutputStream(), true);
+                            escritor.println("ConteoMensajes:"+totalMensajesPrivados+":"+totalMensajesGrupales);
+
+
+                        }
+                    }
+                    else if(mensaje.startsWith("/EstadistcasUser"))
+                    {
+                        String[] parts = mensaje.split(" ");
+                        if (parts.length==2)
+                        {
+                            enviarUsuariosAdmin(parts[1]);
+                        }
+                    }
+
+
+                    else if (mensaje.startsWith("/UpdateHistorialEspecifico")) {
                         String[] parts = mensaje.split(" ",5);
                         System.out.println(parts.length);
 
                         if (parts.length==5){
                             updateHistorialEspecifico(parts[3],parts[1],parts[2],parts[4]);
                             getHistorialGrupal(parts[3]);
+                            String user = parts[4].split(":")[0];
+
+                            // Obtener la fecha de hoy
+                            LocalDate fechaHoy = LocalDate.now();
+
+                            // Definir el formato deseado
+                            DateTimeFormatter formato = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+                            // Formatear la fecha
+                            String fechaFormateada = fechaHoy.format(formato);
+
+
+                            Server.agregarUsuario(user);
+                            Server.sumarMensajesGrupales(user,fechaFormateada,1);
+
+
+
                         }
 
 
@@ -482,7 +686,20 @@ public class Server {
                                 updateHistorialGrupo("pabellon",parts[2]);
                                 updateHistorialGrupo("examenes",parts[2]);
                             }
-                            updateHistorialGrupo(parts[1],parts[2]);
+                            else{
+                            updateHistorialGrupo(parts[1],parts[2]);}
+                            String user = parts[2].split(":")[0];
+                            // Obtener la fecha de hoy
+                            LocalDate fechaHoy = LocalDate.now();
+                            // Definir el formato deseado
+                            DateTimeFormatter formato = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                            // Formatear la fecha
+                            String fechaFormateada = fechaHoy.format(formato);
+                            Server.agregarUsuario(user);
+                            Server.sumarMensajesGrupales(user,fechaFormateada,1);
+
+
+
                         } else {
                             enviarMensajeASockets(socket, "Comando incorrecto");
                         }
@@ -521,6 +738,18 @@ public class Server {
                     } else if (mensaje.startsWith("/updateHistorial")) {
                         String[] parts = mensaje.split(" ", 4);
                         if (parts.length == 4) {
+                            // Obtener la fecha de hoy
+                            LocalDate fechaHoy = LocalDate.now();
+
+                            // Definir el formato deseado
+                            DateTimeFormatter formato = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+                            // Formatear la fecha
+                            String fechaFormateada = fechaHoy.format(formato);
+
+
+                            Server.agregarUsuario(parts[1]);
+                            Server.sumarMensajesPrivados(parts[1],fechaFormateada,1);
                              Server.updateHistorial(parts[1], parts[2], parts[3]);
                         }
                         else {

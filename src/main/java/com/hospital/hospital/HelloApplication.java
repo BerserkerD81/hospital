@@ -27,6 +27,8 @@
     import java.io.PrintWriter;
     import java.net.Socket;
     import java.util.*;
+    import java.util.regex.Matcher;
+    import java.util.regex.Pattern;
     import java.util.stream.Stream;
 
     import static java.lang.System.identityHashCode;
@@ -83,6 +85,7 @@
         private TextField registro_Checkpassword;
         private AnchorPane panelRegistro;
         private HBox deleteButton;
+        private AnchorPane estadisticasPane;
 
 
         @Override
@@ -157,6 +160,7 @@
                             if (!userType.equals("admin"))
                             {
                                 adminButton.setVisible(false);
+                                accountButton.setVisible(false);
                                 if (userType.equals("aseo")){
                                     messageButton.setVisible(false);
                                 }
@@ -198,11 +202,17 @@
             adminButton = (HBox) scene.lookup("#admin_button");
             chatBar = (HBox) scene.lookup("#chat_bar");
             paneBox =(Pane) scene.lookup("#paneBox");
-            AnchorPane auxn = createCustomAnchorPane();
-            paneBox.getChildren().add(auxn);
+            AnchorPane registopane = createCustomAnchorPane();
+            AnchorPane estadisticasPane = estadisticasPanel();
+            paneBox.getChildren().add(registopane);
+            paneBox.getChildren().add(estadisticasPane);
+
+            this.estadisticasPane = (AnchorPane) scene.lookup("#estadisticas");
             panelRegistro =(AnchorPane) scene.lookup("#panelRegistro");
             panelRegistro.setVisible(false);
+            estadisticasPane.setVisible(false);
             deleteButton =(HBox) scene.lookup("#delete_button");
+            deleteButton.setVisible(false);
 
 
 
@@ -276,6 +286,8 @@
                 messagelog.setVisible(true);
                 chatBar.setVisible(true);
                 panelRegistro.setVisible(false);
+                estadisticasPane.setVisible(false);
+                deleteButton.setVisible(true);
             });
             groupButton.setOnMouseClicked(e -> {
                 for (Node node : menuBar.getChildren()) {
@@ -283,6 +295,7 @@
                         node.setStyle(""); // Establecer el estilo vacío para eliminar el fondo coloreado
                     }
                 }
+                deleteButton.setVisible(true);
                 gruposActivos.clear();
                 groupButton.setStyle("-fx-background-color: purple;"); // Cambiar el fondo a morado al hacer clic en este HBox
                 searchBox.setVisible(false);
@@ -294,6 +307,7 @@
                 messagelog.setVisible(true);
                 chatBar.setVisible(true);
                 panelRegistro.setVisible(false);
+                estadisticasPane.setVisible(false);
                 System.out.println(panelRegistro);
 
 
@@ -307,6 +321,7 @@
                         node.setStyle(""); // Establecer el estilo vacío para eliminar el fondo coloreado
                     }
                 }
+                deleteButton.setVisible(false);
                 accountButton.setStyle("-fx-background-color: purple;"); // Cambiar el fondo a morado al hacer clic en este HBox
                 searchBox.setVisible(false);
                 chatPlace.getChildren().remove(2,chatPlace.getChildren().size());
@@ -314,6 +329,8 @@
                 messagelog.setVisible(false);
                 chatBar.setVisible(false);
                 panelRegistro.setVisible(false);
+                estadisticasPane.setVisible(true);
+                writer.println("/EstadistcasUser "+userName);
 
             });
             adminButton.setOnMouseClicked(e -> {
@@ -322,6 +339,7 @@
                         node.setStyle(""); // Establecer el estilo vacío para eliminar el fondo coloreado
                     }
                 }
+                deleteButton.setVisible(false);
                 adminButton.setStyle("-fx-background-color: purple;"); // Cambiar el fondo a morado al hacer clic en este HBox
                 searchBox.setVisible(false);
                 chatPlace.getChildren().remove(2,chatPlace.getChildren().size());
@@ -329,6 +347,7 @@
                 messagelog.setVisible(false);
                 chatBar.setVisible(false);
                 panelRegistro.setVisible(true);
+                estadisticasPane.setVisible(false);
 
 
 
@@ -539,8 +558,37 @@
                                     chatPlace.getChildren().add(grupo);}
                                 }
                             }
-                        }
-                            });
+                        } else if (message.startsWith("EstadisticasUsers:")) {
+                            String [] parts = message.split(":");
+                            String [] aux =  parts[1].split(" ");
+
+                            ComboBox userStats = (ComboBox) scene.lookup("#usuariosEstadisticas");
+                            userStats.getItems().clear();
+                            for(String user :aux)
+                            {
+                                userStats.getItems().add(user);
+
+                            }
+
+                            } else if (message.startsWith("ConteoMensajes:")) {
+                                String [] parts = message.split(":");
+
+                                TextFlow privadosC  = (TextFlow) scene.lookup("#Privados");
+                                TextFlow grupalesC  = (TextFlow) scene.lookup("#Grupales");
+                                privadosC.setTextAlignment(TextAlignment.CENTER);
+                                Text privados =new Text(parts[1]);
+                                privados.setFont(new Font("System Bold Italic", 16.0));
+                                Text grupales = new Text(parts[2]);
+                                grupales.setFont(new Font("System Bold Italic", 16.0));
+                                privadosC.getChildren().add(privados);
+                                grupalesC.getChildren().add(grupales);
+
+
+
+
+                            }
+
+                        });
                     }
                 }
 
@@ -748,6 +796,161 @@
             return hbox;
 
         }
+
+
+        public AnchorPane estadisticasPanel() {
+                AnchorPane anchorPane = new AnchorPane();
+                anchorPane.setId("estadisticas");
+                anchorPane.setMaxHeight(Double.NEGATIVE_INFINITY);
+                anchorPane.setMaxWidth(Double.NEGATIVE_INFINITY);
+                anchorPane.setMinHeight(Double.NEGATIVE_INFINITY);
+                anchorPane.setMinWidth(Double.NEGATIVE_INFINITY);
+                anchorPane.setPrefHeight(641.0);
+                anchorPane.setPrefWidth(720.0);
+                anchorPane.getStyleClass().add("dark-gray-background");
+                anchorPane.getStylesheets().add("@values/styles.css");
+
+                // Text elements
+                Text usuarioText = new Text("Usuario:");
+                usuarioText.setFill(javafx.scene.paint.Color.WHITE);
+                usuarioText.setLayoutX(239.0);
+                usuarioText.setLayoutY(117.0);
+
+                Text fechaInicioText = new Text("Fecha Inicio");
+                fechaInicioText.setFill(javafx.scene.paint.Color.WHITE);
+                fechaInicioText.setLayoutX(228.0);
+                fechaInicioText.setLayoutY(173.0);
+                fechaInicioText.setStrokeType(javafx.scene.shape.StrokeType.OUTSIDE);
+                fechaInicioText.setStrokeWidth(0.0);
+                fechaInicioText.setFont(new Font("System Bold Italic", 13.0));
+
+                Text fechaFinText = new Text("Fecha Fin");
+                fechaFinText.setFill(javafx.scene.paint.Color.WHITE);
+                fechaFinText.setLayoutX(228.0);
+                fechaFinText.setLayoutY(236.0);
+                fechaFinText.setStrokeType(javafx.scene.shape.StrokeType.OUTSIDE);
+                fechaFinText.setStrokeWidth(0.0);
+                fechaFinText.setFont(new Font("System Bold Italic", 13.0));
+
+                // TextFields
+                TextField textField1 = new TextField();
+                textField1.setId("Fecha_inicio");
+                textField1.setLayoutX(309.0);
+                textField1.setLayoutY(155.0);
+                textField1.getStyleClass().add("radius");
+
+                TextField textField2 = new TextField();
+                textField2.setId("Fecha_fin");
+                textField2.setLayoutX(309.0);
+                textField2.setLayoutY(218.0);
+                textField2.getStyleClass().add("radius");
+
+                // ComboBox
+                ComboBox<String> comboBox = new ComboBox<>();
+                comboBox.setLayoutX(315.0);
+                comboBox.setLayoutY(99.0);
+                comboBox.setPrefWidth(150.0);
+                comboBox.setId("usuariosEstadisticas");
+                // HBox
+                HBox hBox = new HBox();
+                hBox.setAlignment(javafx.geometry.Pos.CENTER);
+                hBox.setLayoutX(315.0);
+                hBox.setLayoutY(274.0);
+                hBox.setPrefHeight(56.0);
+                hBox.setPrefWidth(150.0);
+                hBox.setStyle("-fx-background-color: purple;");
+                hBox.setId("ButtonEstadisticas");
+                hBox.getStyleClass().add("radius");
+
+
+                // Text inside HBox
+                Text buscarText = new Text("Buscar");
+                buscarText.setFill(javafx.scene.paint.Color.WHITE);
+                buscarText.setStrokeType(javafx.scene.shape.StrokeType.OUTSIDE);
+                buscarText.setStrokeWidth(0.0);
+                buscarText.setFont(new Font("System Bold Italic", 14.0));
+                hBox.getChildren().add(buscarText);
+
+                // TextFlow
+                TextFlow textFlow1 = new TextFlow();
+                textFlow1.setVisible(false);
+                textFlow1.setId("Privados");
+                textFlow1.setLayoutX(303.0);
+                textFlow1.setLayoutY(394.0);
+                textFlow1.setPrefHeight(38.0);
+                textFlow1.setPrefWidth(175.0);
+                textFlow1.setStyle("-fx-background-color: white;");
+                textFlow1.getStyleClass().add("radius");
+                textFlow1.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
+
+                TextFlow textFlow2 = new TextFlow();
+                textFlow2.setVisible(false);
+                textFlow2.setId("Grupales");
+                textFlow2.setLayoutX(303.0);
+                textFlow2.setLayoutY(503.0);
+                textFlow2.setPrefHeight(38.0);
+                textFlow2.setPrefWidth(175.0);
+                textFlow2.setStyle("-fx-background-color: white;");
+                textFlow2.getStyleClass().add("radius");
+                textFlow2.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
+
+                // Text elements for descriptions
+                Text mensajesPrivadosText = new Text("Mensajes Privados entre las fechas por el usuario");
+                mensajesPrivadosText.setFill(javafx.scene.paint.Color.WHITE);
+                mensajesPrivadosText.setLayoutX(133.0);
+                mensajesPrivadosText.setLayoutY(378.0);
+                mensajesPrivadosText.setStrokeType(javafx.scene.shape.StrokeType.OUTSIDE);
+                mensajesPrivadosText.setStrokeWidth(0.0);
+                mensajesPrivadosText.setVisible(false);
+                mensajesPrivadosText.setFont(new Font("System Bold Italic", 22.0));
+
+                Text mensajesGrupalesText = new Text("Mensajes Grupales entre las fechas por el usuario");
+                mensajesGrupalesText.setFill(javafx.scene.paint.Color.WHITE);
+                mensajesGrupalesText.setLayoutX(133.0);
+                mensajesGrupalesText.setLayoutY(487.0);
+                mensajesGrupalesText.setStrokeType(javafx.scene.shape.StrokeType.OUTSIDE);
+                mensajesGrupalesText.setStrokeWidth(0.0);
+                mensajesGrupalesText.setVisible(false);
+                mensajesGrupalesText.setFont(new Font("System Bold Italic", 22.0));
+
+                // Adding elements to the AnchorPane
+                anchorPane.getChildren().addAll(
+                        usuarioText, fechaInicioText, fechaFinText,
+                        textField1, textField2,
+                        comboBox, hBox,
+                        textFlow1, mensajesPrivadosText,
+                        textFlow2, mensajesGrupalesText
+                );
+
+            hBox.setOnMouseClicked(event -> {
+                textFlow1.setVisible(true);
+                textFlow1.getChildren().clear();
+                textFlow2.setVisible(true);
+                textFlow2.getChildren().clear();
+                mensajesGrupalesText.setVisible(true);
+                mensajesPrivadosText.setVisible(true);
+                obtenerEstadisticas(comboBox.getSelectionModel().getSelectedItem(),textField1.getText(),textField2.getText());
+            });
+
+                return anchorPane;
+            }
+
+        private void obtenerEstadisticas(String usuario, String date, String date1) {
+            // Verificar si las fechas tienen el formato "yyyy-mm-dd" y no están en blanco
+            if (isValidDateFormat(date) && isValidDateFormat(date1) && !date.isEmpty() && !date1.isEmpty()) {
+                this.writer.println("/getEstadisticasU" + " " + usuario + " " + date+ " " + date1+" "+userName);
+            } else {
+                // Manejar el caso en el que las fechas no tengan el formato adecuado o estén en blanco
+                System.out.println("Error: Las fechas deben tener el formato 'yyyy-mm-dd' y no deben estar en blanco.");
+            }
+        }
+        private boolean isValidDateFormat(String date) {
+            String regex = "\\d{4}-\\d{2}-\\d{2}";
+            Pattern pattern = Pattern.compile(regex);
+            Matcher matcher = pattern.matcher(date);
+            return matcher.matches();
+        }
+
         public AnchorPane createCustomAnchorPane() {
             AnchorPane anchorPane = new AnchorPane();
             anchorPane.setPrefWidth(433.0 * 1.5);
