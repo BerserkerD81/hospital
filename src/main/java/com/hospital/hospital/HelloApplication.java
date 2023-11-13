@@ -178,6 +178,7 @@
 
 
                     }
+                    connect.close();
                 } catch (SQLException ex) {
                     System.out.println(ex.getMessage());
                 }
@@ -213,6 +214,59 @@
             estadisticasPane.setVisible(false);
             deleteButton =(HBox) scene.lookup("#delete_button");
             deleteButton.setVisible(false);
+
+
+            Button boton_registro = (Button) panelRegistro.lookup("#botonRegistro");
+            TextField registro_user = (TextField) panelRegistro.lookup("#registro_user");
+            TextField registro_rut = (TextField) panelRegistro.lookup("#registro_rut");
+            TextField registro_correo = (TextField) panelRegistro.lookup("#registro_correo");
+            TextField registro_pass = (TextField) panelRegistro.lookup("#registro_pass");
+            TextField registro_check = (TextField) panelRegistro.lookup("#registro_check");
+            ComboBox<String> registro_tipo = (ComboBox) panelRegistro.lookup("#registro_tipo");
+
+            boton_registro.setOnMouseClicked(e -> {
+
+                String user = registro_user.getText();
+                user = user.replace(" ", "_");
+                String rut = registro_rut.getText();
+                String correo = registro_correo.getText();
+                String pass = registro_pass.getText();
+                String check = registro_check.getText();
+                String tipo = registro_tipo.getValue();
+
+
+                String url  ="jdbc:sqlite:src/main/resources/db/login.db";
+                Connection connect;
+                int ID = 0;
+                try {
+                    connect = DriverManager.getConnection(url);
+                    Statement statement = connect.createStatement();
+                    if(Objects.equals(pass, check)){
+                        if(connect != null){
+                            ResultSet st = statement.executeQuery("SELECT MAX(id) AS max_id FROM usuarios;");
+                            if(st.next()){
+                                int maxID = st.getInt("max_id");
+                                ID = maxID + 1;
+                            }
+                            System.out.println("ID actual"+ID);
+                            PreparedStatement algo = connect.prepareStatement("INSERT INTO usuarios (ID,name, correo, password, rut, correo,tipoUsuario) " + "VALUES (?, ?, ?, ?, ?, ?, ?)");
+                            algo.setInt(1,ID);
+                            algo.setString(2, user);
+                            algo.setString(3, correo);
+                            algo.setString(4, pass);
+                            algo.setString(5, rut);
+                            algo.setString(6, correo);
+                            algo.setString(7, tipo);
+
+                            algo.executeUpdate();
+                        }
+
+                    }
+                    connect.close();
+                } catch (SQLException ex) {
+                    throw new RuntimeException(ex);
+                }
+            });
 
 
 
@@ -953,15 +1007,14 @@
 
         public AnchorPane createCustomAnchorPane() {
             AnchorPane anchorPane = new AnchorPane();
-            anchorPane.setPrefWidth(433.0 * 1.5);
-            anchorPane.setPrefHeight(332.0 * 1.5);
+            anchorPane.setPrefSize(649.0, 491.0);
             anchorPane.setStyle("-fx-background-color: #64197d;");
 
             ImageView imageView = new ImageView(new Image("https://github.com/BerserkerD81/hospital/blob/662f1359f8cf104abaed97b9f01b950e875dcd14/src/main/resources/com/hospital/hospital/images/usuario.png"));
-            imageView.setFitWidth(241.0 * 1.5);
-            imageView.setFitHeight(225.0 * 1.5);
-            imageView.setLayoutX(106.0 * 1.5);
-            imageView.setLayoutY(73.0 * 1.5);
+            imageView.setFitWidth(241.0);
+            imageView.setFitHeight(225.0);
+            imageView.setLayoutX(106.0);
+            imageView.setLayoutY(73.0);
             imageView.setOpacity(0.13);
             imageView.setPreserveRatio(true);
 
@@ -971,63 +1024,82 @@
 
             Text text1 = new Text("Nombre de usuario:");
             text1.setFill(javafx.scene.paint.Color.WHITE);
-            text1.setLayoutX(64.0 * 1.5);
-            text1.setLayoutY(114.0 * 1.5);
+            text1.setLayoutX(96.0);
+            text1.setLayoutY(90.0);
 
             Text text2 = new Text("Contraseña:");
             text2.setFill(javafx.scene.paint.Color.WHITE);
-            text2.setLayoutX(64.0 * 1.5);
-            text2.setLayoutY(157.0 * 1.5);
+            text2.setLayoutX(117.0);
+            text2.setLayoutY(263.0);
 
             Text text3 = new Text("Confirmar contraseña:");
             text3.setFill(javafx.scene.paint.Color.WHITE);
-            text3.setLayoutX(64.0 * 1.5);
-            text3.setLayoutY(202.0 * 1.5);
+            text3.setLayoutX(90.0);
+            text3.setLayoutY(320.0);
 
             TextField textField1 = new TextField();
-            textField1.setLayoutX(205.0 * 1.5);
-            textField1.setLayoutY(97.0 * 1.5);
-            textField1.setId("userRegistro");
+            textField1.setLayoutX(255.0);
+            textField1.setLayoutY(73.0);
+            textField1.setId("registro_user");
 
             TextField textField2 = new TextField();
-            textField2.setLayoutX(205.0 * 1.5);
-            textField2.setLayoutY(140.0 * 1.5);
-            textField2.setId("passRegistro");
+            textField2.setLayoutX(255.0);
+            textField2.setLayoutY(246.0);
+            textField2.setId("registro_pass");
 
             TextField textField3 = new TextField();
-            textField3.setLayoutX(205.0 * 1.5);
-            textField3.setLayoutY(185.0 * 1.5);
-            textField3.setId("confirmarPass");
+            textField3.setLayoutX(255.0);
+            textField3.setLayoutY(303.0);
+            textField3.setId("registro_check");
 
             Text text4 = new Text("Registrar usuario");
             text4.setFill(javafx.scene.paint.Color.WHITE);
-            text4.setLayoutX(41.0 * 1.5);
-            text4.setLayoutY(64.0 * 1.5);
-            text4.setFont(new Font(29.0 * 1.5));
+            text4.setLayoutX(41.0);
+            text4.setLayoutY(45.0);
+            text4.setFont(new Font(29.0));
 
             Button button = new Button("Hecho");
-            button.setLayoutX(330.0 * 1.5);
-            button.setLayoutY(295.0 * 1.5);
-            button.setId("RegistroButton");
+            button.setLayoutX(285.0);
+            button.setLayoutY(433.0);
+            button.setId("botonRegistro");
 
-            ComboBox comboBox = new ComboBox();
-            comboBox.setLayoutX(205.0 * 1.5);
-            comboBox.setLayoutY(227.0 * 1.5);
-            comboBox.setPrefWidth(150.0 * 1.5);
+            ComboBox<String> comboBox = new ComboBox<>();
+            comboBox.setLayoutX(255.0);
+            comboBox.setLayoutY(370.0);
+            comboBox.setPrefWidth(150.0);
+            comboBox.getItems().addAll("admision", "examenes", "medico","pabellon");
             comboBox.setPromptText("tipo");
-            comboBox.getItems().addAll("medico","auxiliar","admision","examenes");
-            comboBox.setId("comboRegistro");
+            comboBox.setId("registro_tipo");
 
             Text text5 = new Text("Tipo de Usuario:");
             text5.setFill(javafx.scene.paint.Color.WHITE);
-            text5.setLayoutX(63.0 * 1.5);
-            text5.setLayoutY(244.0 * 1.5);
+            text5.setLayoutX(120.0);
+            text5.setLayoutY(387.0);
+
+            Text text6 = new Text("Rut");
+            text6.setFill(javafx.scene.paint.Color.WHITE);
+            text6.setLayoutX(139.0);
+            text6.setLayoutY(144.0);
+
+            Text text7 = new Text("Correo");
+            text7.setFill(javafx.scene.paint.Color.WHITE);
+            text7.setLayoutX(130.0);
+            text7.setLayoutY(203.0);
+
+            TextField textField4 = new TextField();
+            textField4.setLayoutX(255.0);
+            textField4.setLayoutY(127.0);
+            textField4.setId("registro_rut");
+
+            TextField textField5 = new TextField();
+            textField5.setLayoutX(255.0);
+            textField5.setLayoutY(186.0);
+            textField5.setId("registro_correo");
 
             anchorPane.getChildren().addAll(
                     imageView, text1, text2, text3, textField1, textField2, textField3,
-                    text4, button, comboBox, text5
+                    text4, button, comboBox, text5, text6, text7, textField4, textField5
             );
-
 
             anchorPane.setId("panelRegistro");
             return anchorPane;

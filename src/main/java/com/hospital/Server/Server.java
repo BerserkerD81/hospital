@@ -614,8 +614,8 @@ public class Server {
                             }
 
                             List<Map<String, Integer>> mensajesGrupalesEnRango = obtenerMensajesGrupalesEnRango(parts[1], parts[2], parts[3]);
-                            if (mensajesPrivadosEnRango.isEmpty()) {
-                                System.out.println("No hay mensajes privados en el rango de fechas.");
+                            if (mensajesGrupalesEnRango.isEmpty()) {
+                                System.out.println("No hay mensajes Grupales en el rango de fechas.");
                                 totalMensajesGrupales=0;
                             } else {
                                 totalMensajesGrupales = mensajesGrupalesEnRango.stream()
@@ -666,8 +666,6 @@ public class Server {
                             Server.agregarUsuario(user);
                             Server.sumarMensajesGrupales(user,fechaFormateada,1);
 
-
-
                         }
 
 
@@ -685,21 +683,28 @@ public class Server {
                                 updateHistorialGrupo("admision",parts[2]);
                                 updateHistorialGrupo("pabellon",parts[2]);
                                 updateHistorialGrupo("examenes",parts[2]);
+                                String user = parts[2].split(":")[0];
+                                // Obtener la fecha de hoy
+                                LocalDate fechaHoy = LocalDate.now();
+                                // Definir el formato deseado
+                                DateTimeFormatter formato = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                                // Formatear la fecha
+                                String fechaFormateada = fechaHoy.format(formato);
+                                Server.agregarUsuario(user);
+                                Server.sumarMensajesGrupales(user,fechaFormateada,1);
                             }
                             else{
-                            updateHistorialGrupo(parts[1],parts[2]);}
-                            String user = parts[2].split(":")[0];
-                            // Obtener la fecha de hoy
-                            LocalDate fechaHoy = LocalDate.now();
-                            // Definir el formato deseado
-                            DateTimeFormatter formato = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-                            // Formatear la fecha
-                            String fechaFormateada = fechaHoy.format(formato);
-                            Server.agregarUsuario(user);
-                            Server.sumarMensajesGrupales(user,fechaFormateada,1);
-
-
-
+                            updateHistorialGrupo(parts[1],parts[2]);
+                                String user = parts[2].split(":")[0];
+                                // Obtener la fecha de hoy
+                                LocalDate fechaHoy = LocalDate.now();
+                                // Definir el formato deseado
+                                DateTimeFormatter formato = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                                // Formatear la fecha
+                                String fechaFormateada = fechaHoy.format(formato);
+                                Server.agregarUsuario(user);
+                                Server.sumarMensajesGrupales(user,fechaFormateada,1);
+                            }
                         } else {
                             enviarMensajeASockets(socket, "Comando incorrecto");
                         }
