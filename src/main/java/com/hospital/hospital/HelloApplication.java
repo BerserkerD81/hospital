@@ -127,7 +127,6 @@
                 String user = login_user.getText();
                 this.userName = user;
                 String pass = login_password.getText();
-                //Aqui hacer verificaciones
                 inicio = true;
                 //consultar base de datos (por ahora sin el server)
                 String url = "jdbc:sqlite:C:\\Users\\migue\\OneDrive\\Escritorio\\Nueva carpeta\\hospital\\src\\main\\resources\\db\\login.db";
@@ -174,9 +173,11 @@
 
 
                     }
+                    connect.close();
                 } catch (SQLException ex) {
                     System.out.println(ex.getMessage());
                 }
+
             });
 
 
@@ -216,7 +217,39 @@
                 String pass = registro_pass.getText();
                 String check = registro_check.getText();
                 String tipo = registro_tipo.getValue();
-                System.out.println("OK");
+
+
+                String url = "jdbc:sqlite:C:\\Users\\migue\\OneDrive\\Escritorio\\Nueva carpeta\\hospital\\src\\main\\resources\\db\\login.db";
+                Connection connect;
+                int ID = 0;
+                try {
+                    connect = DriverManager.getConnection(url);
+                    Statement statement = connect.createStatement();
+                    if(Objects.equals(pass, check)){
+                        if(connect != null){
+                            ResultSet st = statement.executeQuery("SELECT MAX(id) AS max_id FROM usuarios;");
+                            if(st.next()){
+                                int maxID = st.getInt("max_id");
+                                ID = maxID + 1;
+                            }
+                            System.out.println("ID actual"+ID);
+                            PreparedStatement algo = connect.prepareStatement("INSERT INTO usuarios (ID,name, correo, password, rut, correo,tipoUsuario) " + "VALUES (?, ?, ?, ?, ?, ?, ?)");
+                            algo.setInt(1,ID);
+                            algo.setString(2, user);
+                            algo.setString(3, correo);
+                            algo.setString(4, pass);
+                            algo.setString(5, rut);
+                            algo.setString(6, correo);
+                            algo.setString(7, tipo);
+
+                            algo.executeUpdate();
+                        }
+
+                    }
+                    connect.close();
+                } catch (SQLException ex) {
+                    throw new RuntimeException(ex);
+                }
             });
 
 
