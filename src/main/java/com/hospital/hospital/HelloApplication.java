@@ -87,6 +87,7 @@
         private AnchorPane panelRegistro;
         private HBox deleteButton;
         private AnchorPane estadisticasPane;
+        private static Connection connect;
 
 
         @Override
@@ -135,7 +136,6 @@
                 inicio = true;
                 //consultar base de datos (por ahora sin el server)
                 String url = "jdbc:sqlite:src/main/resources/db/login.db";
-                Connection connect;
                 ResultSet result = null;
                 //si el usuario y contraseña son correctos se abre la ventana de chat
                 try {
@@ -299,7 +299,6 @@
 
 
                 String url  ="jdbc:sqlite:src/main/resources/db/login.db";
-                Connection connect;
                 int ID = 0;
                 try {
                     connect = DriverManager.getConnection(url);
@@ -323,12 +322,19 @@
                             algo.setInt(8,aux);
 
                             algo.executeUpdate();
+                            connect.close();
                         }
 
                     }
-                    connect.close();
+                    
                 } catch (SQLException ex) {
                     throw new RuntimeException(ex);
+                } finally {
+                    try {
+                        connect.close();
+                    } catch (SQLException ex) {
+                        throw new RuntimeException(ex);
+                    }
                 }
             });
 
@@ -1187,7 +1193,7 @@
         public static void main(String[] args) {
             //conecta con la base de datos
             String url = "jdbc:sqlite:src/main/resources/db/login.db";
-            Connection connect;
+
             ResultSet result = null;
             try {
                 connect = DriverManager.getConnection(url);
