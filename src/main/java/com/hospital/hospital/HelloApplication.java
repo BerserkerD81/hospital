@@ -359,7 +359,7 @@
                 solicitarHistorial(this.userName,talkingTo);
             }
                 else {
-                    if(userType.equals("medico") || userType.equals("admin")){
+                    if(userType.equals("medico")){
                     chatGrupo(talkingTo,userName+":"+message);
                     solicitarHistorialGrupo(talkingTo);
                     }
@@ -643,7 +643,7 @@
                             //chatPlace.getChildren().remove(2,chatPlace.getChildren().size());
                                 String [] aux= message.split(":");
                                 String [] grupos = aux[1].split(" ");
-                                if(userType.equals("medico")|| userType.equals("admin")) {
+                                if(userType.equals("medico")) {
                                     for (String group : grupos)
                                 {
                                     if(!gruposActivos.contains(group)){
@@ -1137,7 +1137,7 @@
             comboBox.setLayoutX(255.0);
             comboBox.setLayoutY(370.0);
             comboBox.setPrefWidth(150.0);
-            comboBox.getItems().addAll("admision", "examenes", "medico","pabellon");
+            comboBox.getItems().addAll("admision", "examenes", "medico","pabellon","aseo");
             comboBox.setPromptText("tipo");
             comboBox.setId("registro_tipo");
 
