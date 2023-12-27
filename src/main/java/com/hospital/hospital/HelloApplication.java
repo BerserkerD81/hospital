@@ -72,6 +72,10 @@
         private AnchorPane panelRegistro;
         private HBox deleteButton;
         private AnchorPane estadisticasPane;
+
+        private boolean connected = true; // Variable para controlar la conexión
+
+        private Scene scene;
         @Override
         public void start(Stage stage) throws IOException {
             // Pedir al usuario que ingrese su nombre por consola
@@ -103,7 +107,7 @@
                 stage.show();
             });
             FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("hello-view.fxml"));
-            Scene scene = new Scene(fxmlLoader.load(), 1080, 720);
+             scene = new Scene(fxmlLoader.load(), 1080, 720);
             botonLogin.setOnMouseClicked(e -> {
                 String user = login_user.getText();
                 this.userName = user;
@@ -111,12 +115,14 @@
                 //Aqui hacer verificaciones
                 inicio = true;
                 //consultar base de datos (por ahora sin el server)
-                String url = "jdbc:sqlite:src/main/resources/db/login.db";
+                String url = "jdbc:mariadb://35.226.170.116:3306/hospital";
+                String usr = "user";
+                String password = "discordp";
                 Connection connect;
                 ResultSet result = null;
                 //si el usuario y contraseña son correctos se abre la ventana de chat
                 try {
-                    connect = DriverManager.getConnection(url);
+                    connect = DriverManager.getConnection(url, usr, password);
                     if(!change){
                         if (connect != null  ) {
                             DatabaseMetaData meta = connect.getMetaData();
@@ -256,11 +262,13 @@
                 String check = registro_check.getText();
                 String tipo = registro_tipo.getValue();
                 Integer aux =1;
-                String url  ="jdbc:sqlite:src/main/resources/db/login.db";
+                String url = "jdbc:mariadb://35.226.170.116:3306/hospital";
+                String usr = "user";
+                String password = "discordp";
                 Connection connect;
                 int ID = 0;
                 try {
-                    connect = DriverManager.getConnection(url);
+                    connect = DriverManager.getConnection(url,usr,password);
                     Statement statement = connect.createStatement();
                     if(Objects.equals(pass, check)){
                         if(connect != null){
@@ -270,15 +278,14 @@
                                 ID = maxID + 1;
                             }
                             System.out.println("ID actual"+ID);
-                            PreparedStatement algo = connect.prepareStatement("INSERT INTO usuarios (ID,name, correo, password, rut, correo,tipoUsuario,Ftime) " + "VALUES (?, ?, ?, ?, ?, ?, ?,?)");
+                            PreparedStatement algo = connect.prepareStatement("INSERT INTO usuarios (ID,name, correo, password, rut,tipoUsuario,Ftime) " + "VALUES (?, ?, ?, ?, ?, ?, ?)");
                             algo.setInt(1,ID);
                             algo.setString(2, user);
                             algo.setString(3, correo);
                             algo.setString(4, pass);
                             algo.setString(5, rut);
-                            algo.setString(6, correo);
-                            algo.setString(7, tipo);
-                            algo.setInt(8,aux);
+                            algo.setString(6, tipo);
+                            algo.setInt(7,aux);
                             algo.executeUpdate();
                         }
                     }
@@ -403,11 +410,42 @@
                 estadisticasPane.setVisible(false);
             });
             // Conectarse al servidor
-            socket = new Socket("localhost", 9090); // Reemplazar "localhost" con la IP real si es necesario
-            // Enviar el nombre de usuario al servidor
+            try {
+                // Conectarse al servidor
+                socket = new Socket("34.30.76.57", 8080); // Reemplazar "localhost" con la IP real si es necesario
+                // Resto del código para la comunicación con el servidor
+                IniciarEscucha();
+                // ...
+            } catch (IOException e) {
+                System.out.println("Se perdió la conexión con el servidor: " + e.getMessage());
+                reconnect();
+                e.printStackTrace();
+            }
+
             this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             this.writer = new PrintWriter(socket.getOutputStream(), true);
             // Setting up a thread to continuously listen for server messages
+
+        }
+        private void reconnect() {
+            connected = true;
+            while (connected) {
+                try {
+                    socket.close(); // Cerrar socket existente
+                    Thread.sleep(3000); // Esperar 3 segundos antes de reconectar
+                    socket = new Socket("34.30.76.57", 8080); // Intentar reconectar
+                    this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                    this.writer = new PrintWriter(socket.getOutputStream(), true);
+                    writer.println("/sendUser " + userName + " " + userType);
+                    IniciarEscucha();
+                    connected = false; // Conexión exitosa, salimos del bucle
+                } catch (IOException | InterruptedException e) {
+                    System.out.println("Intentando reconectar en 3 segundos...");
+                }
+            }
+        }
+        private void IniciarEscucha()
+        {
             Thread listenThread = new Thread(() -> {
                 Scanner in = new Scanner(reader);
                 while (true) {
@@ -421,26 +459,26 @@
                             {
                                 String [] aux= message.split(":");
                                 if(aux.length>1 && (filter!="" && filter!=" ")){
-                                String[] usuarios= aux[1].split(", ");
-                                for (String part : usuarios) { // Recorrer cada elemento del mensajeff
-                                    if (part.contains(filter)){
-                                    if(!(userName+"-"+userType).equals(part) && !usuariosActivos.contains(part))
-                                    {
-                                        if (userType.equals("medico") && !part.contains("-aseo")){
-                                        usuariosActivos.add(part);
-                                        HBox elementBox = createDuplicateStructure(part);
-                                        chatPlace.getChildren().add(elementBox);
-                                        } else if (!userType.equals("medico") && part.contains("medico")) {
-                                            usuariosActivos.add(part);
-                                            HBox elementBox = createDuplicateStructure(part);
-                                            chatPlace.getChildren().add(elementBox);
-                                               }
+                                    String[] usuarios= aux[1].split(", ");
+                                    for (String part : usuarios) { // Recorrer cada elemento del mensajeff
+                                        if (part.contains(filter)){
+                                            if(!(userName+"-"+userType).equals(part) && !usuariosActivos.contains(part))
+                                            {
+                                                if (userType.equals("medico") && !part.contains("-aseo")){
+                                                    usuariosActivos.add(part);
+                                                    HBox elementBox = createDuplicateStructure(part);
+                                                    chatPlace.getChildren().add(elementBox);
+                                                } else if (!userType.equals("medico") && part.contains("medico")) {
+                                                    usuariosActivos.add(part);
+                                                    HBox elementBox = createDuplicateStructure(part);
+                                                    chatPlace.getChildren().add(elementBox);
+                                                }
                                             }
                                         }
-                                     } 
+                                    }
                                 }
                             }
-                             if(message.startsWith("Desconectado")){
+                            if(message.startsWith("Desconectado")){
                                 System.out.println(message);
                                 String userToDisconnect = message.split(": ")[1];
                                 System.out.println(userToDisconnect);
@@ -467,7 +505,7 @@
                                     }
                                 }
                             }
-                             if (message.startsWith("Historial entre")) {
+                            if (message.startsWith("Historial entre")) {
                                 String[] aux = message.split("\\*");
                                 System.out.println(Arrays.toString(aux));
                                 if(aux.length>3){
@@ -483,7 +521,7 @@
                                 }
                             }
                             if (message.startsWith("/activos:")&&dm){
-                            chatPlace.getChildren().remove(2,chatPlace.getChildren().size());
+                                chatPlace.getChildren().remove(2,chatPlace.getChildren().size());
                                 usuariosActivos.clear();
                                 String [] aux= message.split(":");
                                 if(aux.length>1 && (filter!="" || filter!=" ")){
@@ -524,53 +562,62 @@
                                         }
                                     }
                                 }
-                             }
-                        else if (message.startsWith("Grupo:")){
-                            //chatPlace.getChildren().remove(2,chatPlace.getChildren().size());
+                            }
+                            else if (message.startsWith("Grupo:")){
+                                //chatPlace.getChildren().remove(2,chatPlace.getChildren().size());
                                 String [] aux= message.split(":");
                                 String [] grupos = aux[1].split(" ");
                                 if(userType.equals("medico")|| userType.equals("admin")) {
                                     for (String group : grupos)
-                                {
-                                    if(!gruposActivos.contains(group)){
-                                        gruposActivos.add(group);
-                                    HBox grupo = createDuplicateStructure(group);
-                                    chatPlace.getChildren().add(grupo);}
+                                    {
+                                        if(!gruposActivos.contains(group)){
+                                            gruposActivos.add(group);
+                                            HBox grupo = createDuplicateStructure(group);
+                                            chatPlace.getChildren().add(grupo);}
+                                    }
                                 }
-                            }
-                            else {
+                                else {
                                     if(aux.length>=3){
-                                String [] actvos = aux[2].split(" ");
-                                usuariosActivos.clear();
-                                usuariosActivos.addAll(Arrays.asList(actvos));
-                                usuariosActivos.add("todos");
-                                HBox answering = resGrupo();
-                                chatPlace.getChildren().add(answering);}
-                                else
-                                {
-                                    usuariosActivos.clear();
-                                    usuariosActivos.add("todos");
-                                    HBox answering = resGrupo();
-                                    chatPlace.getChildren().add(answering);
-                                }
-                                for (String group : grupos)
-                                {
-                                    if(!gruposActivos.contains(group)){
-                                    HBox grupo = createDuplicateStructure(group);
-                                    chatPlace.getChildren().add(grupo);}
+                                        String [] actvos = aux[2].split(" ");
+                                        usuariosActivos.clear();
+                                        usuariosActivos.addAll(Arrays.asList(actvos));
+                                        usuariosActivos.add("todos");
+                                        HBox answering = resGrupo();
+                                        chatPlace.getChildren().add(answering);}
+                                    else
+                                    {
+                                        usuariosActivos.clear();
+                                        usuariosActivos.add("todos");
+                                        HBox answering = resGrupo();
+                                        chatPlace.getChildren().add(answering);
+                                    }
+                                    for (String group : grupos)
+                                    {
+                                        if(!gruposActivos.contains(group)){
+                                            HBox grupo = createDuplicateStructure(group);
+                                            chatPlace.getChildren().add(grupo);}
+                                    }
                                 }
                             }
-                        }
-                        else if (message.startsWith("EstadisticasUsers:")) {
-                            String [] parts = message.split(":");
-                            String [] aux =  parts[1].split(" ");
-                            ComboBox userStats = (ComboBox) scene.lookup("#usuariosEstadisticas");
-                            userStats.getItems().clear();
-                            for(String user :aux) {
-                                userStats.getItems().add(user);
-                            }
-                        }
-                        else if (message.startsWith("ConteoMensajes:")) {
+                            else if (message.startsWith("EstadisticasUsers:")) {
+                                String [] parts = message.split(":");
+                                String [] aux =  parts[1].split(" ");
+                                ComboBox userStats = (ComboBox) scene.lookup("#usuariosEstadisticas");
+                                userStats.getItems().clear();
+                                for(String user :aux) {
+                                    userStats.getItems().add(user);
+                                }
+                            } else if (message.startsWith("/LostConnection")) {
+
+                                // Agregar un mensaje de reconexión
+                                Platform.runLater(() -> {
+                                    // Imprimir mensaje en la interfaz gráfica o consola
+                                    System.out.println("Conexión perdida. Intentando reconectar en 3 segundos...");
+                                });
+                                // Intentar reconexión
+                                reconnect();
+
+                            } else if (message.startsWith("ConteoMensajes:")) {
                                 String [] parts = message.split(":");
                                 TextFlow privadosC  = (TextFlow) scene.lookup("#Privados");
                                 TextFlow grupalesC  = (TextFlow) scene.lookup("#Grupales");
@@ -711,10 +758,10 @@
         }
         private void solicitarHistorialGrupo(String grupo) {
             // Enviar solicitud al servidor para obtener el historial entre los usuarios
-            writer.println("/getHistorialGrupal" +  " " + grupo);
+            writer.println("/getHistorialGrupal" +  " " + grupo+ " " +userName);
         }
         public void chatGrupo(String grupo,String mensaje) {
-            // Enviar solicitud al servidor para obtener el historial entre los usuarios
+            writer.println("/getHistorialGrupal" +  " " + grupo+ " " +userName);// Enviar solicitud al servidor para obtener el historial entre los usuarios
             writer.println("/updateHistorialGrupal " + grupo +" "+mensaje);
         }
         public void solicitarHistorial(String usuarioSolicitante, String usuarioBuscado) {
@@ -973,7 +1020,7 @@
         }
         public static void main(String[] args) {
             //conecta con la base de datos
-            String url = "jdbc:sqlite:src/main/resources/db/login.db";
+            String url = "jdbc:mariadb://35.226.170.116:3306/hospital";
             Connection connect;
             ResultSet result = null;
             try {
